@@ -6,6 +6,14 @@
 <title>Lumo</title>
 <meta name="theme-color" content="#fcf9f4">
 <link rel="manifest" href="manifest.json">
+
+<!-- Soporte PWA para iOS/Safari (no lee bien manifest.json por sí solo) -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Lumo">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<link rel="icon" type="image/png" sizes="512x512" href="icons/icon-512.png">
 <link href="https://fonts.googleapis.com" rel="preconnect"/>
 <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@500;600;700&display=swap" rel="stylesheet"/>
@@ -534,5 +542,15 @@ tailwind.config = { darkMode: 'class', theme: { extend: {
 
 </div>
 <script src="app.js"></script>
+<script>
+  // Registro del service worker (habilita instalación real + modo offline)
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", () => {
+      navigator.serviceWorker.register("service-worker.js").catch((err) => {
+        console.warn("No se pudo registrar el service worker:", err);
+      });
+    });
+  }
+</script>
 </body>
 </html>
