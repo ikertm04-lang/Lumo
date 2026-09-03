@@ -31,6 +31,115 @@
     if (el && MASCOT_SRC[key]) el.src = MASCOT_SRC[key];
   }
 
+  /* ============================================================
+     FIREBASE — sincronización "Dúo Lumo" entre los dos celulares
+     Cada perfil (elena/lucas) es un documento en la colección
+     "profiles". localStorage sigue siendo la caché instantánea y
+     offline; Firestore es la fuente compartida entre los dos
+     teléfonos. Se usa Auth anónimo (dos personas, sin login real).
+     ============================================================ */
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyAK8kgsokYeTBQ0ed_aop6FeouwrSwfV-A",
+    authDomain: "lumo-f6c68.firebaseapp.com",
+    projectId: "lumo-f6c68",
+    storageBucket: "lumo-f6c68.firebasestorage.app",
+    messagingSenderId: "808895466924",
+    appId: "1:808895466924:web:67b134b779e77382a5be09",
+  };
+
+  let db = null;
+  let cloudReady = false;
+
+  function setSyncStatus(text, icon) {
+    const el = $("sync-status");
+    if (!el) return;
+    el.innerHTML =
+      '<span class="material-symbols-outlined text-[14px]">' +
+      (icon || "sync") +
+      "</span>" +
+      text;
+  }
+
+  function initCloud() {
+    if (typeof firebase === "undefined") {
+      setSyncStatus("Sin conexión", "cloud_off");
+      return;
+    }
+    try {
+      firebase.initializeApp(firebaseConfig);
+      db = firebase.firestore();
+      // Permite seguir funcionando offline y sincronizar al recuperar señal
+      db.enablePersistence({ synchronizeTabs: true }).catch(() => {
+        // Falla en modo privado / varias pestañas sin sync — la app sigue
+        // funcionando, solo sin caché offline de Firestore.
+      });
+
+      firebase
+        .auth()
+        .signInAnonymously()
+        .then(() => {
+          cloudReady = true;
+          setSyncStatus("En vivo", "sync");
+          listenProfile("elena");
+          listenProfile("lucas");
+        })
+        .catch((err) => {
+          console.warn("No se pudo autenticar con Firebase:", err);
+          setSyncStatus("Sin conexión", "cloud_off");
+        });
+    } catch (err) {
+      console.warn("No se pudo inicializar Firebase:", err);
+      setSyncStatus("Sin conexión", "cloud_off");
+    }
+  }
+
+  // Escucha en tiempo real los cambios del documento de cada perfil.
+  // Si el cambio viene de una escritura propia (hasPendingWrites), se
+  // ignora para no procesar el eco de lo que este mismo dispositivo
+  // acaba de mandar.
+  function listenProfile(key) {
+    if (!db) return;
+    db.collection("profiles")
+      .doc(key)
+      .onSnapshot(
+        (snap) => {
+          if (!snap.exists) return;
+          if (snap.metadata.hasPendingWrites) return; // eco de nuestra propia escritura
+          const cloudData = snap.data();
+          delete cloudData.updatedAt;
+          state.profiles[key] = cloudData;
+          try {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+          } catch (e) {}
+          setSyncStatus("En vivo", "sync");
+          if (document.readyState !== "loading" && state.currentProfile) {
+            renderAll();
+          }
+        },
+        (err) => {
+          console.warn("Error escuchando el perfil " + key + ":", err);
+          setSyncStatus("Sin conexión", "cloud_off");
+        }
+      );
+  }
+
+  // Sube el perfil activo a Firestore. Se llama automáticamente cada
+  // vez que se guarda estado local (checkin, comida, peso, Strava...).
+  function pushProfileToCloud(key) {
+    if (!db || !cloudReady || !state.profiles[key]) return;
+    const payload = Object.assign({}, state.profiles[key], {
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+    });
+    db.collection("profiles")
+      .doc(key)
+      .set(payload, { merge: false })
+      .catch((err) => {
+        console.warn("No se pudo sincronizar con Dúo Lumo:", err);
+        setSyncStatus("Sin conexión", "cloud_off");
+      });
+  }
+
   const STORAGE_KEY = "lumo_state_v1";
 
   const MUSCLE_GROUPS = [
@@ -82,6 +191,7 @@
     } catch (e) {
       console.warn("No se pudo guardar el estado de Lumo:", e);
     }
+    if (state.currentProfile) pushProfileToCloud(state.currentProfile);
   }
 
   /* ============================================================
@@ -653,9 +763,15 @@
   }
 
   function resetApp() {
-    if (!confirm("Esto borrará todos los datos de prueba de ambos perfiles. ¿Continuar?")) return;
+    if (!confirm("Esto borrará todos los datos de prueba de ambos perfiles (en este celular y en la nube). ¿Continuar?")) return;
     localStorage.removeItem(STORAGE_KEY);
-    location.reload();
+    if (db) {
+      Promise.all(
+        ["elena", "lucas"].map((k) => db.collection("profiles").doc(k).delete().catch(() => {}))
+      ).finally(() => location.reload());
+    } else {
+      location.reload();
+    }
   }
 
   /* ---------- Cambiar de perfil ---------- */
@@ -739,6 +855,9 @@
       const splash = $("splash-screen");
       if (splash) splash.style.pointerEvents = "none";
     }, 1400);
+
+    // Conectar con Firebase para la sincronización Dúo Lumo
+    initCloud();
 
     // ¿Ya hay un perfil con onboarding completado? entrar directo a la app
     if (state.currentProfile && state.profiles[state.currentProfile]) {

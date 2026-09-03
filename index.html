@@ -440,7 +440,7 @@ tailwind.config = { darkMode: 'class', theme: { extend: {
     </section>
 
     <section class="bg-surface-container-lowest p-space-md rounded-lg shadow-sm flex flex-col gap-space-sm">
-      <div class="flex items-center justify-between"><div class="flex items-center gap-1.5"><span class="material-symbols-outlined text-primary text-[20px]">groups</span><h3 class="font-headline-sm text-headline-sm text-on-surface">Dúo Lumo hoy</h3></div></div>
+      <div class="flex items-center justify-between"><div class="flex items-center gap-1.5"><span class="material-symbols-outlined text-primary text-[20px]">groups</span><h3 class="font-headline-sm text-headline-sm text-on-surface">Dúo Lumo hoy</h3></div><span class="font-label-md text-label-md text-on-surface-variant flex items-center gap-1" id="sync-status"><span class="material-symbols-outlined text-[14px]">sync</span>Conectando…</span></div>
       <div class="grid grid-cols-2 gap-space-sm relative">
         <div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-surface-container-lowest shadow-md flex items-center justify-center z-10"><span class="font-label-caps text-label-caps text-on-surface-variant font-bold">VS</span></div>
         <div class="bg-primary-fixed/40 p-space-sm rounded-DEFAULT flex flex-col items-center text-center gap-1 shadow-sm">
@@ -541,6 +541,10 @@ tailwind.config = { darkMode: 'class', theme: { extend: {
 </nav>
 
 </div>
+<!-- Firebase (sincronización Dúo Lumo entre los dos celulares) -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script src="app.js"></script>
 <script>
   // Registro del service worker (habilita instalación real + modo offline)
