@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"/>
+<title>Lumo</title>
+<meta name="theme-color" content="#fcf9f4">
+<link rel="manifest" href="manifest.json">
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@500;600;700&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<style>
+  @layer base{html,body{width:100%;margin:0;padding:0;background-color:#fcf9f4;color:#1c1c19;}body{overscroll-behavior:none;-webkit-tap-highlight-color:transparent;}.pb-safe{padding-bottom:env(safe-area-inset-bottom,0px);}.pt-safe{padding-top:env(safe-area-inset-top,0px);}}
+  ::-webkit-scrollbar{display:none;}
+  .screen{display:none;} .screen.active{display:flex;}
+  .view{display:none;} .view.active{display:flex; animation: fadeUp .35s ease;}
+  .ob-step{display:none;} .ob-step.active{display:flex; animation: fadeUp .4s ease;}
+
+  @keyframes fadeUp { from { opacity:0; transform: translateY(10px); } to { opacity:1; transform: translateY(0); } }
+  @keyframes popIn { 0% { transform: scale(0.9); opacity:0; } 60% { transform: scale(1.04); opacity:1; } 100% { transform: scale(1); } }
+  @keyframes splashPop { 0% { transform: scale(0.7); opacity:0; } 60% { transform: scale(1.08); opacity:1; } 100% { transform: scale(1); opacity:1; } }
+  @keyframes splashFade { to { opacity:0; visibility:hidden; } }
+
+  .profile-card-selected { animation: popIn .3s ease; }
+
+  #splash-screen {
+    position:fixed; inset:0; z-index:9999; background:#fcf9f4;
+    display:flex; flex-direction:column; align-items:center; justify-content:center; gap:16px;
+    animation: splashFade .5s ease 1.3s forwards;
+  }
+  #splash-screen img { width:180px; animation: splashPop .7s cubic-bezier(.34,1.56,.64,1); }
+  #splash-screen .splash-dot { width:8px; height:8px; border-radius:999px; background:#a52e5a; animation: splashDot 1s ease-in-out infinite; }
+  #splash-screen .splash-dots { display:flex; gap:6px; }
+  #splash-screen .splash-dot:nth-child(2){ animation-delay:.15s; }
+  #splash-screen .splash-dot:nth-child(3){ animation-delay:.3s; }
+  @keyframes splashDot { 0%,100%{ transform:translateY(0); opacity:.4; } 50%{ transform:translateY(-6px); opacity:1; } }
+</style>
+<script src="https://cdn.tailwindcss.com"></script>
+<script id="tailwind-config">
+tailwind.config = { darkMode: 'class', theme: { extend: {
+  colors: { 'surface-container-high': '#ebe8e3', 'surface-tint': '#a8315c', 'on-surface-variant': '#564146', 'on-tertiary-fixed-variant': '#00513a', 'secondary-fixed-dim': '#a1c9ff', 'surface-container': '#f0ede9', 'on-surface': '#1c1c19', 'tertiary-fixed': '#86f8c9', 'surface-variant': '#e5e2dd', 'primary-fixed-dim': '#ffb1c4', 'secondary-container': '#5da9fe', 'on-secondary-fixed-variant': '#004880', 'on-error': '#ffffff', 'secondary': '#0060a8', 'on-primary-fixed-variant': '#881645', 'on-background': '#1c1c19', 'surface': '#fcf9f4', 'outline': '#897176', 'surface-bright': '#fcf9f4', 'tertiary-fixed-dim': '#68dbae', 'on-tertiary': '#ffffff', 'surface-container-highest': '#e5e2dd', 'inverse-on-surface': '#f3f0eb', 'inverse-surface': '#31302d', 'on-primary': '#ffffff', 'tertiary': '#00694c', 'surface-container-low': '#f6f3ee', 'primary-container': '#c54772', 'on-tertiary-fixed': '#002115', 'on-error-container': '#93000a', 'background': '#fcf9f4', 'inverse-primary': '#ffb1c4', 'on-secondary-container': '#003d6d', 'on-primary-fixed': '#3f001a', 'on-secondary-fixed': '#001c38', 'on-secondary': '#ffffff', 'outline-variant': '#dcbfc5', 'secondary-fixed': '#d2e4ff', 'error-container': '#ffdad6', 'tertiary-container': '#008560', 'on-primary-container': '#fffbff', 'error': '#ba1a1a', 'surface-dim': '#dcdad5', 'primary-fixed': '#ffd9e1', 'on-tertiary-container': '#f5fff7', 'primary': '#a52e5a', 'surface-container-lowest': '#ffffff' },
+  borderRadius: { DEFAULT: '1rem', lg: '2rem', xl: '3rem', full: '9999px' },
+  spacing: { 'page-margin-desktop': '2.5rem', 'space-xl': '1.5rem', 'space-2xs': '0.25rem', 'space-md': '1rem', 'space-sm': '0.75rem', 'max-content-width': '540px', 'space-2xl': '2rem', 'gutter-desktop': '1.5rem', 'space-lg': '1.25rem', 'space-xs': '0.5rem', 'space-3xl': '2.5rem', 'page-margin-mobile': '1.25rem', 'gutter-mobile': '1rem' },
+  fontFamily: { 'headline-md': ['outfit'], 'headline-sm': ['outfit'], 'display-lg': ['outfit'], 'headline-lg': ['outfit'], 'label-md': ['inter'], 'body-lg': ['inter'], 'body-sm': ['inter'], 'label-caps': ['outfit'], 'display-lg-mobile': ['display-lg-mobile'], 'label-lg': ['inter'], 'body-md': ['inter'] },
+  fontSize: { 'headline-md': ['22px', {lineHeight:'30px',letterSpacing:'-0.01em',fontWeight:'600'}], 'headline-sm': ['18px', {lineHeight:'26px',letterSpacing:'0em',fontWeight:'600'}], 'display-lg': ['40px', {lineHeight:'48px',letterSpacing:'-0.02em',fontWeight:'700'}], 'headline-lg': ['28px', {lineHeight:'36px',letterSpacing:'-0.01em',fontWeight:'700'}], 'label-md': ['12px', {lineHeight:'16px',letterSpacing:'0.02em',fontWeight:'600'}], 'body-lg': ['16px', {lineHeight:'24px',letterSpacing:'0em',fontWeight:'400'}], 'body-sm': ['12px', {lineHeight:'18px',letterSpacing:'0.01em',fontWeight:'400'}], 'label-caps': ['11px', {lineHeight:'14px',letterSpacing:'0.06em',fontWeight:'700'}], 'display-lg-mobile': ['32px', {lineHeight:'40px',letterSpacing:'-0.02em',fontWeight:'700'}], 'label-lg': ['14px', {lineHeight:'20px',letterSpacing:'0.01em',fontWeight:'600'}], 'body-md': ['14px', {lineHeight:'22px',letterSpacing:'0em',fontWeight:'400'}] }
+} } };
+</script>
+</head>
+<body class="bg-surface font-body-md text-body-md text-on-surface min-h-screen flex flex-col items-center selection:bg-primary-fixed">
+
+<div id="splash-screen">
+  <img alt="Lumo" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNDAgNzAiIHdpZHRoPSIyNDAiIGhlaWdodD0iNzAiIGZpbGw9Im5vbmUiPgogIDxzdHlsZT4KICAgIC5icmFuZC10ZXh0IHsgZm9udC1mYW1pbHk6ICdPdXRmaXQnLCBzYW5zLXNlcmlmOyBmb250LXdlaWdodDogNzAwOyBmb250LXNpemU6IDQycHg7IGZpbGw6ICMyRDI1MjI7IGxldHRlci1zcGFjaW5nOiAtMC41cHg7IH0KICAgIC5nbG93LWRvdCB7IGZpbGw6ICNFRjlGMjc7IH0KICAgIC5nbG93LXJpbmcgeyBmaWxsOiAjRkRGM0UxOyB9CiAgPC9zdHlsZT4KICA8dGV4dCB4PSIxMiIgeT0iNTAiIGNsYXNzPSJicmFuZC10ZXh0Ij5MdW08L3RleHQ+CiAgPHRleHQgeD0iMTA4IiB5PSI1MCIgY2xhc3M9ImJyYW5kLXRleHQiPm88L3RleHQ+CiAgPGNpcmNsZSBjeD0iMTQwIiBjeT0iMTgiIHI9IjgiIGNsYXNzPSJnbG93LXJpbmciLz4KICA8Y2lyY2xlIGN4PSIxNDAiIGN5PSIxOCIgcj0iNC41IiBjbGFzcz0iZ2xvdy1kb3QiLz4KICA8cGF0aCBkPSJNMTQwIDggTDE0MCAxMSBNMTQwIDI1IEwxNDAgMjggTTEzMCAxOCBMMTMzIDE4IE0xNDcgMTggTDE1MCAxOCIgc3Ryb2tlPSIjRUY5RjI3IiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgo8L3N2Zz4K"/>
+  <div class="splash-dots"><span class="splash-dot"></span><span class="splash-dot"></span><span class="splash-dot"></span></div>
+</div>
+
+<div class="w-full max-w-[540px] flex flex-col min-h-screen relative">
+
+<header class="fixed top-0 max-w-[540px] w-full z-50 bg-surface/85 backdrop-blur-xl pt-safe shadow-[0_1px_12px_rgba(45,37,34,0.04)]">
+  <div class="h-16 px-page-margin-mobile flex items-center justify-between">
+    <div class="flex items-center gap-space-xs">
+      <img alt="Logo Lumo" class="h-8 w-auto object-contain" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNDAgNzAiIHdpZHRoPSIyNDAiIGhlaWdodD0iNzAiIGZpbGw9Im5vbmUiPgogIDxzdHlsZT4KICAgIC5icmFuZC10ZXh0IHsgZm9udC1mYW1pbHk6ICdPdXRmaXQnLCBzYW5zLXNlcmlmOyBmb250LXdlaWdodDogNzAwOyBmb250LXNpemU6IDQycHg7IGZpbGw6ICMyRDI1MjI7IGxldHRlci1zcGFjaW5nOiAtMC41cHg7IH0KICAgIC5nbG93LWRvdCB7IGZpbGw6ICNFRjlGMjc7IH0KICAgIC5nbG93LXJpbmcgeyBmaWxsOiAjRkRGM0UxOyB9CiAgPC9zdHlsZT4KICA8dGV4dCB4PSIxMiIgeT0iNTAiIGNsYXNzPSJicmFuZC10ZXh0Ij5MdW08L3RleHQ+CiAgPHRleHQgeD0iMTA4IiB5PSI1MCIgY2xhc3M9ImJyYW5kLXRleHQiPm88L3RleHQ+CiAgPGNpcmNsZSBjeD0iMTQwIiBjeT0iMTgiIHI9IjgiIGNsYXNzPSJnbG93LXJpbmciLz4KICA8Y2lyY2xlIGN4PSIxNDAiIGN5PSIxOCIgcj0iNC41IiBjbGFzcz0iZ2xvdy1kb3QiLz4KICA8cGF0aCBkPSJNMTQwIDggTDE0MCAxMSBNMTQwIDI1IEwxNDAgMjggTTEzMCAxOCBMMTMzIDE4IE0xNDcgMTggTDE1MCAxOCIgc3Ryb2tlPSIjRUY5RjI3IiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgo8L3N2Zz4K"/>
+    </div>
+    <div class="flex items-center gap-space-sm">
+      <h1 class="font-label-caps text-label-caps tracking-wider text-on-surface-variant uppercase bg-surface-container px-space-xs py-1 rounded-full" id="header-label">Inicio</h1>
+      <div class="w-8 h-8 rounded-full overflow-hidden bg-primary-fixed flex items-center justify-center">
+        <img id="header-avatar" alt="Avatar" class="w-full h-full object-cover" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyMDAgMjAwIiB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCI+CiAgPGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMCwgNSkiPgogICAgPGVsbGlwc2UgY3g9IjEwMCIgY3k9IjE4MCIgcng9IjY1IiByeT0iMTIiIGZpbGw9IiNGMUQ3REYiIC8+CiAgICA8cGF0aCBkPSJNNTIgMTQ1IEMzNSAxMjUgMzUgNzUgNjAgNDUgQzgyIDIwIDEyMCAyMCAxNDIgNDUgQzE2NSA3MiAxNjUgMTI1IDE0OCAxNDUgQzEzMiAxNjYgNjggMTY2IDUyIDE0NSBaIiBmaWxsPSIjRDQ1MzdFIiAvPgogICAgPHBhdGggZD0iTTY4IDEzNSBDNTggMTE1IDYyIDgwIDgwIDYwIEM5MiA0OCAxMTAgNDggMTIyIDYwIEMxMzUgNzUgMTQwIDExNSAxMzIgMTM1IEMxMjIgMTUyIDc4IDE1MiA2OCAxMzUgWiIgZmlsbD0iI0RFNjg4RiIgb3BhY2l0eT0iMC40IiAvPgogICAgPGNpcmNsZSBjeD0iNjgiIGN5PSI5OCIgcj0iMTAiIGZpbGw9IiNGNDk1QjIiIG9wYWNpdHk9IjAuOCIgLz4KICAgIDxjaXJjbGUgY3g9IjEzMiIgY3k9Ijk4IiByPSIxMCIgZmlsbD0iI0Y0OTVCMiIgb3BhY2l0eT0iMC44IiAvPgogICAgPGNpcmNsZSBjeD0iODIiIGN5PSI4NSIgcj0iNyIgZmlsbD0iIzFGMTUxOCIgLz4KICAgIDxjaXJjbGUgY3g9IjExOCIgY3k9Ijg1IiByPSI3IiBmaWxsPSIjMUYxNTE4IiAvPgogICAgPGNpcmNsZSBjeD0iODAiIGN5PSI4MiIgcj0iMi41IiBmaWxsPSIjRkZGRkZGIiAvPgogICAgPGNpcmNsZSBjeD0iMTE2IiBjeT0iODIiIHI9IjIuNSIgZmlsbD0iI0ZGRkZGRiIgLz4KICAgIDxwYXRoIGQ9Ik05MiA5OCBRMTAwIDEwNiAxMDggOTgiIHN0cm9rZT0iIzFGMTUxOCIgc3Ryb2tlLXdpZHRoPSIzLjUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgZmlsbD0ibm9uZSIgLz4KICAgIDxjaXJjbGUgY3g9IjEwMCIgY3k9IjIyIiByPSI1IiBmaWxsPSIjRUY5RjI3IiAvPgogICAgPHBhdGggZD0iTTEwMCAyNyBRMTAwIDM0IDEwMCAzOCIgc3Ryb2tlPSIjRUY5RjI3IiBzdHJva2Utd2lkdGg9IjMiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgZmlsbD0ibm9uZSIgLz4KICA8L2c+Cjwvc3ZnPgo="/>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main class="flex-1 flex flex-col w-full px-page-margin-mobile pt-16 pb-28 bg-surface">
+
+<!-- ============ ONBOARDING ============ -->
+<div id="screen-onboarding" class="screen active flex-col w-full">
+
+  <!-- PASO 1 - Selección de perfil -->
+  <div class="ob-step active flex-col w-full" data-step="1">
+    <div class="flex flex-col items-center justify-center pt-2 pb-5">
+      <div class="flex items-center justify-center mb-3">
+        <img alt="Logo Lumo" class="h-9 w-auto object-contain" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNDAgNzAiIHdpZHRoPSIyNDAiIGhlaWdodD0iNzAiIGZpbGw9Im5vbmUiPgogIDxzdHlsZT4KICAgIC5icmFuZC10ZXh0IHsgZm9udC1mYW1pbHk6ICdPdXRmaXQnLCBzYW5zLXNlcmlmOyBmb250LXdlaWdodDogNzAwOyBmb250LXNpemU6IDQycHg7IGZpbGw6ICMyRDI1MjI7IGxldHRlci1zcGFjaW5nOiAtMC41cHg7IH0KICAgIC5nbG93LWRvdCB7IGZpbGw6ICNFRjlGMjc7IH0KICAgIC5nbG93LXJpbmcgeyBmaWxsOiAjRkRGM0UxOyB9CiAgPC9zdHlsZT4KICA8dGV4dCB4PSIxMiIgeT0iNTAiIGNsYXNzPSJicmFuZC10ZXh0Ij5MdW08L3RleHQ+CiAgPHRleHQgeD0iMTA4IiB5PSI1MCIgY2xhc3M9ImJyYW5kLXRleHQiPm88L3RleHQ+CiAgPGNpcmNsZSBjeD0iMTQwIiBjeT0iMTgiIHI9IjgiIGNsYXNzPSJnbG93LXJpbmciLz4KICA8Y2lyY2xlIGN4PSIxNDAiIGN5PSIxOCIgcj0iNC41IiBjbGFzcz0iZ2xvdy1kb3QiLz4KICA8cGF0aCBkPSJNMTQwIDggTDE0MCAxMSBNMTQwIDI1IEwxNDAgMjggTTEzMCAxOCBMMTMzIDE4IE0xNDcgMTggTDE1MCAxOCIgc3Ryb2tlPSIjRUY5RjI3IiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgo8L3N2Zz4K"/>
+      </div>
+      <div class="flex items-center gap-space-xs bg-surface-container-high px-3 py-1.5 rounded-full shadow-sm">
+        <span class="w-2.5 h-2.5 rounded-full bg-primary"></span>
+        <span class="w-2.5 h-2.5 rounded-full bg-surface-variant"></span>
+        <span class="w-2.5 h-2.5 rounded-full bg-surface-variant"></span>
+        <span class="w-2.5 h-2.5 rounded-full bg-surface-variant"></span>
+        <span class="w-2.5 h-2.5 rounded-full bg-surface-variant"></span>
+        <span class="font-label-caps text-label-caps text-on-surface-variant ml-1 tracking-wider uppercase">Paso 1 de 5</span>
+      </div>
+    </div>
+    <div class="text-center px-space-xs mb-space-lg">
+      <h2 class="font-headline-lg text-headline-lg text-on-surface tracking-tight mb-space-xs">¿Quién empezará hoy?</h2>
+      <p class="font-body-md text-body-md text-on-surface-variant max-w-sm mx-auto">Lumo es una aventura compartida para dos. Elige tu perfil para personalizar tu experiencia.</p>
+    </div>
+    <div class="flex flex-col gap-space-md mb-space-lg">
+      <div class="group relative bg-surface-container-lowest rounded-lg p-space-md shadow-sm cursor-pointer overflow-hidden" id="profile-card-elena">
+        <div class="flex items-center justify-between gap-space-md">
+          <div class="relative flex-shrink-0 w-24 h-24 rounded-lg bg-primary-fixed/30 flex items-center justify-center p-space-xs shadow-inner">
+            <img alt="Mascota Femenina Lumo" class="w-full h-full object-contain" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyMDAgMjAwIiB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCI+CiAgPGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMCwgNSkiPgogICAgPGVsbGlwc2UgY3g9IjEwMCIgY3k9IjE4MCIgcng9IjY1IiByeT0iMTIiIGZpbGw9IiNGMUQ3REYiIC8+CiAgICA8cGF0aCBkPSJNNTIgMTQ1IEMzNSAxMjUgMzUgNzUgNjAgNDUgQzgyIDIwIDEyMCAyMCAxNDIgNDUgQzE2NSA3MiAxNjUgMTI1IDE0OCAxNDUgQzEzMiAxNjYgNjggMTY2IDUyIDE0NSBaIiBmaWxsPSIjRDQ1MzdFIiAvPgogICAgPHBhdGggZD0iTTY4IDEzNSBDNTggMTE1IDYyIDgwIDgwIDYwIEM5MiA0OCAxMTAgNDggMTIyIDYwIEMxMzUgNzUgMTQwIDExNSAxMzIgMTM1IEMxMjIgMTUyIDc4IDE1MiA2OCAxMzUgWiIgZmlsbD0iI0RFNjg4RiIgb3BhY2l0eT0iMC40IiAvPgogICAgPGNpcmNsZSBjeD0iNjgiIGN5PSI5OCIgcj0iMTAiIGZpbGw9IiNGNDk1QjIiIG9wYWNpdHk9IjAuOCIgLz4KICAgIDxjaXJjbGUgY3g9IjEzMiIgY3k9Ijk4IiByPSIxMCIgZmlsbD0iI0Y0OTVCMiIgb3BhY2l0eT0iMC44IiAvPgogICAgPGNpcmNsZSBjeD0iODIiIGN5PSI4NSIgcj0iNyIgZmlsbD0iIzFGMTUxOCIgLz4KICAgIDxjaXJjbGUgY3g9IjExOCIgY3k9Ijg1IiByPSI3IiBmaWxsPSIjMUYxNTE4IiAvPgogICAgPGNpcmNsZSBjeD0iODAiIGN5PSI4MiIgcj0iMi41IiBmaWxsPSIjRkZGRkZGIiAvPgogICAgPGNpcmNsZSBjeD0iMTE2IiBjeT0iODIiIHI9IjIuNSIgZmlsbD0iI0ZGRkZGRiIgLz4KICAgIDxwYXRoIGQ9Ik05MiA5OCBRMTAwIDEwNiAxMDggOTgiIHN0cm9rZT0iIzFGMTUxOCIgc3Ryb2tlLXdpZHRoPSIzLjUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgZmlsbD0ibm9uZSIgLz4KICAgIDxjaXJjbGUgY3g9IjEwMCIgY3k9IjIyIiByPSI1IiBmaWxsPSIjRUY5RjI3IiAvPgogICAgPHBhdGggZD0iTTEwMCAyNyBRMTAwIDM0IDEwMCAzOCIgc3Ryb2tlPSIjRUY5RjI3IiBzdHJva2Utd2lkdGg9IjMiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgZmlsbD0ibm9uZSIgLz4KICA8L2c+Cjwvc3ZnPgo="/>
+          </div>
+          <div class="flex-1 min-w-0 flex flex-col items-start">
+            <span class="font-label-caps text-label-caps bg-primary-fixed text-on-primary-fixed-variant px-2 py-0.5 rounded-full uppercase tracking-wider mb-1">Perfil A</span>
+            <span class="font-headline-md text-headline-md text-on-surface truncate mb-space-xs">Liss</span>
+            <p class="font-body-sm text-body-sm text-on-surface-variant mb-space-sm">Metas de energía y hábitos diarios</p>
+            <div class="profile-btn inline-flex items-center justify-center gap-1.5 px-space-md py-1.5 rounded-full font-label-md text-label-md bg-surface-container text-on-surface" id="btn-elena">
+              <span class="material-symbols-outlined text-[18px]" id="icon-elena">radio_button_unchecked</span>
+              <span id="text-elena">Seleccionar</span>
+            </div>
+          </div>
+        </div>
+        <div class="hidden absolute left-0 top-0 bottom-0 w-1.5 bg-primary" id="strip-elena"></div>
+      </div>
+      <div class="group relative bg-surface-container-lowest rounded-lg p-space-md shadow-sm cursor-pointer overflow-hidden opacity-80" id="profile-card-lucas">
+        <div class="flex items-center justify-between gap-space-md">
+          <div class="relative flex-shrink-0 w-24 h-24 rounded-lg bg-secondary-fixed/40 flex items-center justify-center p-space-xs shadow-inner">
+            <img alt="Mascota Masculina Lumo" class="w-full h-full object-contain" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyMDAgMjAwIiB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCI+CiAgPGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMCwgNSkiPgogICAgPGVsbGlwc2UgY3g9IjEwMCIgY3k9IjE4MCIgcng9IjY1IiByeT0iMTIiIGZpbGw9IiNEM0U0RjQiIC8+CiAgICA8cGF0aCBkPSJNNTUgOTAgQzM1IDEyNSA0MCAxNjAgMzAgMTcwIEM1NSAxNjUgNzUgMTYwIDg1IDE1NSBaIiBmaWxsPSIjRUY5RjI3IiAvPgogICAgPHBhdGggZD0iTTE0NSA5MCBDMTY1IDEyNSAxNjAgMTYwIDE3MCAxNzAgQzE0NSAxNjUgMTI1IDE2MCAxMTUgMTU1IFoiIGZpbGw9IiNEOThBMTkiIC8+CiAgICA8cGF0aCBkPSJNNTIgMTQ1IEMzNSAxMjIgMzYgNzAgNjIgNDIgQzg0IDE4IDExOCAxOCAxNDAgNDIgQzE2NCA3MCAxNjUgMTIyIDE0OCAxNDUgQzEzMiAxNjYgNjggMTY2IDUyIDE0NSBaIiBmaWxsPSIjMzc4QUREIiAvPgogICAgPHBhdGggZD0iTTY4IDEzNSBDNTggMTE1IDYyIDgwIDgwIDYwIEM5MiA0OCAxMTAgNDggMTIyIDYwIEMxMzUgNzUgMTQwIDExNSAxMzIgMTM1IEMxMjIgMTUyIDc4IDE1MiA2OCAxMzUgWiIgZmlsbD0iIzU4OUZFNSIgb3BhY2l0eT0iMC40IiAvPgogICAgPHBhdGggZD0iTTY0IDc2IEM3NiA3MCA5MiA3NCAxMDAgODAgQzEwOCA3NCAxMjQgNzAgMTM2IDc2IEMxNDQgODAgMTQ0IDk0IDEzNSA5NiBDMTI0IDk4IDEwOCA5MiAxMDAgODUgQzkyIDkyIDc2IDk4IDY1IDk2IEM1NiA5NCA1NiA4MCA2NCA3NiBaIiBmaWxsPSIjMUM0RjgyIiAvPgogICAgPGNpcmNsZSBjeD0iODIiIGN5PSI4NSIgcj0iNiIgZmlsbD0iI0ZGRkZGRiIgLz4KICAgIDxjaXJjbGUgY3g9IjExOCIgY3k9Ijg1IiByPSI2IiBmaWxsPSIjRkZGRkZGIiAvPgogICAgPGNpcmNsZSBjeD0iODMiIGN5PSI4NSIgcj0iMy41IiBmaWxsPSIjMEUyODQ0IiAvPgogICAgPGNpcmNsZSBjeD0iMTE5IiBjeT0iODUiIHI9IjMuNSIgZmlsbD0iIzBFMjg0NCIgLz4KICAgIDxjaXJjbGUgY3g9Ijg0IiBjeT0iODMiIHI9IjEuNSIgZmlsbD0iI0ZGRkZGRiIgLz4KICAgIDxjaXJjbGUgY3g9IjEyMCIgY3k9IjgzIiByPSIxLjUiIGZpbGw9IiNGRkZGRkYiIC8+CiAgICA8cGF0aCBkPSJNOTQgMTAyIFExMDIgMTA4IDExMCAxMDIiIHN0cm9rZT0iIzBFMjg0NCIgc3Ryb2tlLXdpZHRoPSIzIiBzdHJva2UtbGluZWNhcD0icm91bmQiIGZpbGw9Im5vbmUiIC8+CiAgPC9nPgo8L3N2Zz4K"/>
+          </div>
+          <div class="flex-1 min-w-0 flex flex-col items-start">
+            <span class="font-label-caps text-label-caps bg-secondary-fixed text-on-secondary-fixed-variant px-2 py-0.5 rounded-full uppercase tracking-wider mb-1">Perfil B</span>
+            <span class="font-headline-md text-headline-md text-on-surface truncate mb-space-xs">Iker</span>
+            <p class="font-body-sm text-body-sm text-on-surface-variant mb-space-sm">Fuerza compartida y constancia</p>
+            <div class="profile-btn inline-flex items-center justify-center gap-1.5 px-space-md py-1.5 rounded-full font-label-md text-label-md bg-surface-container text-on-surface" id="btn-lucas">
+              <span class="material-symbols-outlined text-[18px]" id="icon-lucas">radio_button_unchecked</span>
+              <span id="text-lucas">Seleccionar</span>
+            </div>
+          </div>
+        </div>
+        <div class="hidden absolute left-0 top-0 bottom-0 w-1.5 bg-secondary" id="strip-lucas"></div>
+      </div>
+    </div>
+    <div class="bg-surface-container-low rounded-lg p-space-md flex items-center gap-space-sm mb-space-xl shadow-sm">
+      <div class="w-10 h-10 rounded-full bg-tertiary-fixed flex items-center justify-center flex-shrink-0 text-on-tertiary-fixed">
+        <span class="material-symbols-outlined text-[22px]" style="font-variation-settings: 'FILL' 1;">favorite</span>
+      </div>
+      <p class="font-body-sm text-body-sm text-on-surface-variant leading-snug">Ambos perfiles se sincronizarán para celebrar rachas y metas juntos en tiempo real.</p>
+    </div>
+    <button class="w-full h-13 py-3.5 px-space-xl rounded-full font-label-lg text-label-lg bg-surface-container text-on-surface-variant shadow-md flex items-center justify-center gap-2" id="submit-profile-btn" type="button" disabled>
+      <span>Continuar con este perfil</span>
+      <span class="material-symbols-outlined text-[20px]">arrow_forward</span>
+    </button>
+  </div>
+
+  <!-- PASO 2 - Datos personales -->
+  <div class="ob-step flex-col w-full" data-step="2">
+    <div class="flex flex-col gap-space-sm pt-2 mb-space-md">
+      <div class="flex items-center justify-between">
+        <button class="flex items-center gap-1 text-on-surface-variant py-1.5 px-3 rounded-full bg-surface-container back-btn" type="button" data-back="1">
+          <span class="material-symbols-outlined text-[18px]">arrow_back_ios_new</span>
+          <span class="font-label-lg text-label-lg">Atrás</span>
+        </button>
+        <div class="flex items-center gap-1.5 px-3 py-1 rounded-full bg-surface-container-high">
+          <span class="material-symbols-outlined text-[16px] text-primary">auto_awesome</span>
+          <span class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider">Paso 2 de 5</span>
+        </div>
+      </div>
+      <div class="w-full h-2 rounded-full bg-surface-container-highest overflow-hidden"><div class="h-full bg-primary rounded-full" style="width: 40%;"></div></div>
+    </div>
+    <div class="flex items-center self-start gap-2.5 bg-surface-container-lowest shadow-sm rounded-full py-1.5 pl-1.5 pr-4 mb-space-md">
+      <div class="w-8 h-8 rounded-full overflow-hidden bg-primary-fixed flex items-center justify-center">
+        <img id="ob2-avatar" alt="Mascota" class="w-full h-full object-cover" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyMDAgMjAwIiB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCI+CiAgPGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMCwgNSkiPgogICAgPGVsbGlwc2UgY3g9IjEwMCIgY3k9IjE4MCIgcng9IjY1IiByeT0iMTIiIGZpbGw9IiNGMUQ3REYiIC8+CiAgICA8cGF0aCBkPSJNNTIgMTQ1IEMzNSAxMjUgMzUgNzUgNjAgNDUgQzgyIDIwIDEyMCAyMCAxNDIgNDUgQzE2NSA3MiAxNjUgMTI1IDE0OCAxNDUgQzEzMiAxNjYgNjggMTY2IDUyIDE0NSBaIiBmaWxsPSIjRDQ1MzdFIiAvPgogICAgPHBhdGggZD0iTTY4IDEzNSBDNTggMTE1IDYyIDgwIDgwIDYwIEM5MiA0OCAxMTAgNDggMTIyIDYwIEMxMzUgNzUgMTQwIDExNSAxMzIgMTM1IEMxMjIgMTUyIDc4IDE1MiA2OCAxMzUgWiIgZmlsbD0iI0RFNjg4RiIgb3BhY2l0eT0iMC40IiAvPgogICAgPGNpcmNsZSBjeD0iNjgiIGN5PSI5OCIgcj0iMTAiIGZpbGw9IiNGNDk1QjIiIG9wYWNpdHk9IjAuOCIgLz4KICAgIDxjaXJjbGUgY3g9IjEzMiIgY3k9Ijk4IiByPSIxMCIgZmlsbD0iI0Y0OTVCMiIgb3BhY2l0eT0iMC44IiAvPgogICAgPGNpcmNsZSBjeD0iODIiIGN5PSI4NSIgcj0iNyIgZmlsbD0iIzFGMTUxOCIgLz4KICAgIDxjaXJjbGUgY3g9IjExOCIgY3k9Ijg1IiByPSI3IiBmaWxsPSIjMUYxNTE4IiAvPgogICAgPGNpcmNsZSBjeD0iODAiIGN5PSI4MiIgcj0iMi41IiBmaWxsPSIjRkZGRkZGIiAvPgogICAgPGNpcmNsZSBjeD0iMTE2IiBjeT0iODIiIHI9IjIuNSIgZmlsbD0iI0ZGRkZGRiIgLz4KICAgIDxwYXRoIGQ9Ik05MiA5OCBRMTAwIDEwNiAxMDggOTgiIHN0cm9rZT0iIzFGMTUxOCIgc3Ryb2tlLXdpZHRoPSIzLjUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgZmlsbD0ibm9uZSIgLz4KICAgIDxjaXJjbGUgY3g9IjEwMCIgY3k9IjIyIiByPSI1IiBmaWxsPSIjRUY5RjI3IiAvPgogICAgPHBhdGggZD0iTTEwMCAyNyBRMTAwIDM0IDEwMCAzOCIgc3Ryb2tlPSIjRUY5RjI3IiBzdHJva2Utd2lkdGg9IjMiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgZmlsbD0ibm9uZSIgLz4KICA8L2c+Cjwvc3ZnPgo="/>
+      </div>
+      <div class="flex flex-col">
+        <span class="font-label-caps text-label-caps text-primary tracking-wide">Compañero activo</span>
+        <span class="font-label-md text-label-md text-on-surface" id="ob2-config-name">Configurando perfil</span>
+      </div>
+    </div>
+    <div class="flex flex-col gap-1.5 mb-space-lg">
+      <h2 class="font-display-lg-mobile text-display-lg-mobile text-on-surface font-headline-lg tracking-tight">Tus datos esenciales</h2>
+      <p class="font-body-md text-body-md text-on-surface-variant leading-relaxed">Sin juicios ni medidas complicadas. Solo lo necesario para calcular tu ritmo saludable en pareja.</p>
+    </div>
+    <div class="flex flex-col gap-space-md">
+      <div class="bg-surface-container-lowest rounded-[22px] p-space-md shadow-sm">
+        <div class="flex items-center justify-between mb-space-xs">
+          <div class="flex items-center gap-2">
+            <div class="w-7 h-7 rounded-full bg-surface-container flex items-center justify-center text-on-surface-variant"><span class="material-symbols-outlined text-[16px]">cake</span></div>
+            <label class="font-label-lg text-label-lg text-on-surface" for="edad-input">Edad</label>
+          </div>
+          <span class="font-label-caps text-label-caps text-primary bg-primary-fixed px-2.5 py-0.5 rounded-full">Requerido</span>
+        </div>
+        <div class="flex items-center justify-between gap-space-sm pt-1">
+          <input class="w-full bg-transparent font-headline-lg text-headline-lg text-on-surface focus:outline-none p-0 tracking-tight" id="edad-input" max="110" min="14" type="number" placeholder="28"/>
+          <div class="flex items-center bg-surface-container px-3.5 py-1.5 rounded-full"><span class="font-label-md text-label-md text-on-surface-variant">años</span></div>
+        </div>
+      </div>
+      <div class="bg-surface-container-lowest rounded-[22px] p-space-md shadow-sm">
+        <div class="flex items-center justify-between mb-space-xs">
+          <div class="flex items-center gap-2">
+            <div class="w-7 h-7 rounded-full bg-surface-container flex items-center justify-center text-on-surface-variant"><span class="material-symbols-outlined text-[16px]">height</span></div>
+            <label class="font-label-lg text-label-lg text-on-surface" for="estatura-input">Estatura</label>
+          </div>
+        </div>
+        <div class="flex items-center justify-between gap-space-sm pt-1">
+          <input class="w-full bg-transparent font-headline-lg text-headline-lg text-on-surface focus:outline-none p-0 tracking-tight" id="estatura-input" max="250" min="100" type="number" placeholder="165"/>
+          <div class="flex items-center gap-1 text-on-surface-variant"><span class="material-symbols-outlined text-[18px]">straighten</span><span class="font-label-md text-label-md">cm</span></div>
+        </div>
+      </div>
+      <div class="bg-surface-container-lowest rounded-[22px] p-space-md shadow-sm">
+        <div class="flex items-center justify-between mb-space-xs">
+          <div class="flex items-center gap-2">
+            <div class="w-7 h-7 rounded-full bg-primary-fixed flex items-center justify-center text-primary"><span class="material-symbols-outlined text-[16px]">scale</span></div>
+            <label class="font-label-lg text-label-lg text-on-surface" for="peso-input">Peso actual</label>
+          </div>
+        </div>
+        <div class="flex items-center justify-between gap-space-sm pt-1 pb-space-xs">
+          <input class="w-full bg-transparent font-display-lg-mobile text-display-lg-mobile text-primary font-headline-lg focus:outline-none p-0 tracking-tight" id="peso-input" type="number" placeholder="68.5"/>
+          <div class="flex items-center gap-1 px-3 py-1 rounded-full bg-primary-fixed text-primary"><span class="font-label-md text-label-md uppercase tracking-wider font-bold">kg</span></div>
+        </div>
+        <div class="flex items-start gap-2 pt-2.5 mt-2 bg-surface-container-low rounded-xl px-3 py-2 text-on-surface-variant">
+          <span class="material-symbols-outlined text-[16px] text-tertiary mt-0.5" style="font-variation-settings: 'FILL' 1;">favorite</span>
+          <p class="font-body-sm text-body-sm leading-snug">Cada cuerpo es único y este es solo el punto de partida para su meta compartida.</p>
+        </div>
+      </div>
+      <div class="flex items-center justify-center gap-1.5 text-on-surface-variant py-1">
+        <span class="material-symbols-outlined text-[15px]">lock</span>
+        <span class="font-label-md text-label-md">Solo visible para ti y tu compañero de viaje</span>
+      </div>
+      <button class="w-full h-14 bg-primary hover:bg-primary-container text-on-primary rounded-full font-label-lg text-label-lg tracking-wide shadow-md flex items-center justify-center gap-2" id="submit-datos-btn" type="button">
+        <span>Continuar</span><span class="material-symbols-outlined text-[20px]">arrow_forward</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- PASO 3 - IMC y meta -->
+  <div class="ob-step flex-col w-full" data-step="3">
+    <div class="flex items-center justify-between pt-space-xs mb-space-md">
+      <button class="flex items-center gap-1 text-on-surface-variant py-1 px-2 -ml-2 rounded-full back-btn" type="button" data-back="2">
+        <span class="material-symbols-outlined text-[20px]">arrow_back_ios_new</span><span class="font-label-lg text-label-lg">Atrás</span>
+      </button>
+      <div class="flex items-center gap-space-xs">
+        <span class="font-label-md text-label-md text-on-surface-variant">Paso 3 de 5</span>
+        <div class="flex gap-1">
+          <span class="w-4 h-1.5 rounded-full bg-primary"></span><span class="w-4 h-1.5 rounded-full bg-primary"></span><span class="w-4 h-1.5 rounded-full bg-primary"></span>
+          <span class="w-2 h-1.5 rounded-full bg-surface-container-highest"></span><span class="w-2 h-1.5 rounded-full bg-surface-container-highest"></span>
+        </div>
+      </div>
+    </div>
+    <div class="flex flex-col gap-1 mb-space-md">
+      <h2 class="font-headline-md text-headline-md text-on-surface tracking-tight">Tu punto de partida y meta</h2>
+      <p class="font-body-md text-body-md text-on-surface-variant">Un enfoque no restrictivo basado en metas realistas y cariñosas para los dos.</p>
+    </div>
+    <section class="bg-surface-container-lowest rounded-lg p-space-md shadow-sm flex flex-col gap-space-md mb-space-md">
+      <div class="flex items-start justify-between">
+        <div class="flex flex-col">
+          <span class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Tu IMC calculado</span>
+          <div class="flex items-baseline gap-space-xs mt-0.5">
+            <span class="font-display-lg-mobile text-display-lg-mobile text-on-surface font-bold" id="ob3-bmi-value">—</span>
+            <span class="font-label-md text-label-md text-on-surface-variant">kg/m²</span>
+          </div>
+        </div>
+        <div class="inline-flex items-center gap-1 px-3 py-1.5 rounded-full bg-surface-container-high text-on-surface font-label-md text-label-md" id="ob3-bmi-badge">
+          <span class="w-2 h-2 rounded-full bg-secondary-container"></span><span id="ob3-bmi-label">—</span>
+        </div>
+      </div>
+      <div class="bg-surface-container-low rounded-xl p-space-sm flex items-start gap-space-xs">
+        <span class="material-symbols-outlined text-primary text-[20px] shrink-0 mt-0.5" style="font-variation-settings: 'FILL' 1;">favorite</span>
+        <p class="font-body-sm text-body-sm text-on-surface-variant">El IMC es solo una referencia inicial. En <strong class="text-on-surface font-semibold">Lumo</strong> celebramos tu energía diaria, consistencia y el bienestar que construyen juntos.</p>
+      </div>
+    </section>
+    <section class="bg-surface-container-lowest rounded-lg p-space-md shadow-sm flex flex-col gap-space-md mb-space-md">
+      <div class="flex flex-col">
+        <span class="font-label-caps text-label-caps uppercase text-primary tracking-wider">Hito compartido</span>
+        <h3 class="font-headline-sm text-headline-sm text-on-surface">¿Cuál es tu meta de peso?</h3>
+      </div>
+      <div class="bg-surface-container-low rounded-xl p-space-sm flex flex-col items-center gap-space-sm">
+        <div class="flex items-center justify-between w-full max-w-[280px]">
+          <button aria-label="Disminuir peso" class="w-12 h-12 rounded-full bg-surface-container-lowest text-on-surface shadow-sm flex items-center justify-center" id="btn-decrease" type="button"><span class="material-symbols-outlined text-[24px]">remove</span></button>
+          <div class="flex flex-col items-center">
+            <div class="flex items-baseline"><span class="font-display-lg-mobile text-display-lg-mobile text-on-surface tracking-tight font-bold" id="target-weight-val">—</span><span class="font-headline-sm text-headline-sm text-on-surface-variant ml-1 font-medium">kg</span></div>
+            <span class="font-label-md text-label-md text-on-surface-variant" id="ob3-current-weight-label">Peso actual: — kg</span>
+          </div>
+          <button aria-label="Aumentar peso" class="w-12 h-12 rounded-full bg-surface-container-lowest text-on-surface shadow-sm flex items-center justify-center" id="btn-increase" type="button"><span class="material-symbols-outlined text-[24px]">add</span></button>
+        </div>
+        <div class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-tertiary-fixed text-on-tertiary-fixed">
+          <span class="material-symbols-outlined text-[16px]">trending_down</span><span class="font-label-md text-label-md font-semibold" id="diff-text">—</span>
+        </div>
+      </div>
+      <div class="flex items-end gap-space-xs pt-1">
+        <div class="shrink-0 w-16 h-16 rounded-full bg-primary-fixed flex items-center justify-center overflow-hidden"><img id="ob3-avatar" alt="Mascota" class="w-full h-full object-cover" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyMDAgMjAwIiB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCI+CiAgPGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMCwgNSkiPgogICAgPGVsbGlwc2UgY3g9IjEwMCIgY3k9IjE4MCIgcng9IjY1IiByeT0iMTIiIGZpbGw9IiNGMUQ3REYiIC8+CiAgICA8cGF0aCBkPSJNNTIgMTQ1IEMzNSAxMjUgMzUgNzUgNjAgNDUgQzgyIDIwIDEyMCAyMCAxNDIgNDUgQzE2NSA3MiAxNjUgMTI1IDE0OCAxNDUgQzEzMiAxNjYgNjggMTY2IDUyIDE0NSBaIiBmaWxsPSIjRDQ1MzdFIiAvPgogICAgPHBhdGggZD0iTTY4IDEzNSBDNTggMTE1IDYyIDgwIDgwIDYwIEM5MiA0OCAxMTAgNDggMTIyIDYwIEMxMzUgNzUgMTQwIDExNSAxMzIgMTM1IEMxMjIgMTUyIDc4IDE1MiA2OCAxMzUgWiIgZmlsbD0iI0RFNjg4RiIgb3BhY2l0eT0iMC40IiAvPgogICAgPGNpcmNsZSBjeD0iNjgiIGN5PSI5OCIgcj0iMTAiIGZpbGw9IiNGNDk1QjIiIG9wYWNpdHk9IjAuOCIgLz4KICAgIDxjaXJjbGUgY3g9IjEzMiIgY3k9Ijk4IiByPSIxMCIgZmlsbD0iI0Y0OTVCMiIgb3BhY2l0eT0iMC44IiAvPgogICAgPGNpcmNsZSBjeD0iODIiIGN5PSI4NSIgcj0iNyIgZmlsbD0iIzFGMTUxOCIgLz4KICAgIDxjaXJjbGUgY3g9IjExOCIgY3k9Ijg1IiByPSI3IiBmaWxsPSIjMUYxNTE4IiAvPgogICAgPGNpcmNsZSBjeD0iODAiIGN5PSI4MiIgcj0iMi41IiBmaWxsPSIjRkZGRkZGIiAvPgogICAgPGNpcmNsZSBjeD0iMTE2IiBjeT0iODIiIHI9IjIuNSIgZmlsbD0iI0ZGRkZGRiIgLz4KICAgIDxwYXRoIGQ9Ik05MiA5OCBRMTAwIDEwNiAxMDggOTgiIHN0cm9rZT0iIzFGMTUxOCIgc3Ryb2tlLXdpZHRoPSIzLjUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgZmlsbD0ibm9uZSIgLz4KICAgIDxjaXJjbGUgY3g9IjEwMCIgY3k9IjIyIiByPSI1IiBmaWxsPSIjRUY5RjI3IiAvPgogICAgPHBhdGggZD0iTTEwMCAyNyBRMTAwIDM0IDEwMCAzOCIgc3Ryb2tlPSIjRUY5RjI3IiBzdHJva2Utd2lkdGg9IjMiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgZmlsbD0ibm9uZSIgLz4KICA8L2c+Cjwvc3ZnPgo="/></div>
+        <div class="relative bg-surface-container rounded-2xl rounded-bl-xs p-space-sm flex-1 shadow-sm">
+          <div class="flex items-center gap-1 mb-0.5"><span class="font-label-caps text-label-caps text-primary uppercase font-bold">Lumo dice</span></div>
+          <p class="font-body-sm text-body-sm text-on-surface font-medium leading-tight" id="mascot-speech">—</p>
+        </div>
+      </div>
+    </section>
+    <button class="w-full h-12 rounded-full bg-primary text-on-primary font-label-lg text-label-lg font-semibold flex items-center justify-center gap-2 shadow-md" id="submit-meta-btn" type="button">
+      <span>Definir mi meta</span><span class="material-symbols-outlined text-[20px]">arrow_forward</span>
+    </button>
+  </div>
+
+  <!-- PASO 4 - Nivel de actividad -->
+  <div class="ob-step flex-col w-full" data-step="4">
+    <div class="w-full mb-space-md">
+      <div class="flex items-center justify-between gap-space-sm mb-space-xs">
+        <button class="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center text-on-surface shadow-sm back-btn" type="button" data-back="3"><span class="material-symbols-outlined text-[20px]">arrow_back</span></button>
+        <div class="flex items-center gap-space-2xs bg-surface-container px-space-sm py-1 rounded-full"><span class="font-label-caps text-label-caps text-primary tracking-widest uppercase">Paso 4 de 5</span></div>
+        <div class="w-10 h-10 flex items-center justify-center text-on-surface-variant font-label-md text-label-md">80%</div>
+      </div>
+      <div class="w-full bg-surface-container-highest h-2 rounded-full overflow-hidden"><div class="bg-primary h-full rounded-full" style="width: 80%;"></div></div>
+    </div>
+    <div class="flex flex-col mb-space-lg">
+      <h2 class="font-display-lg-mobile text-display-lg-mobile text-on-surface tracking-tight mb-space-2xs">¿Cómo es tu día a día?</h2>
+      <p class="font-body-md text-body-md text-on-surface-variant leading-relaxed">Tu nivel de movimiento nos ayuda a calcular tu gasto calórico real sin exagerar ni restringir de más.</p>
+    </div>
+    <div class="flex flex-col gap-space-sm mb-space-lg" id="activity-options">
+      <div class="activity-card cursor-pointer w-full bg-surface-container-lowest p-space-md rounded-lg shadow-sm flex items-center gap-space-md" data-val="1.2">
+        <div class="w-12 h-12 rounded-full bg-surface-container flex-shrink-0 flex items-center justify-center text-on-surface-variant icon-box"><span class="material-symbols-outlined text-[24px]">chair</span></div>
+        <div class="flex-1 min-w-0"><div class="flex items-center justify-between"><span class="font-headline-sm text-headline-sm text-on-surface font-semibold">Sedentario</span><div class="w-6 h-6 rounded-full bg-surface-container flex items-center justify-center check-badge opacity-0"><span class="material-symbols-outlined text-primary text-[16px]">check</span></div></div><p class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">Trabajo de escritorio, poco movimiento al día</p></div>
+      </div>
+      <div class="activity-card cursor-pointer w-full bg-surface-container-lowest p-space-md rounded-lg shadow-sm flex items-center gap-space-md" data-val="1.375">
+        <div class="w-12 h-12 rounded-full bg-surface-container flex-shrink-0 flex items-center justify-center text-on-surface-variant icon-box"><span class="material-symbols-outlined text-[24px]">directions_walk</span></div>
+        <div class="flex-1 min-w-0"><div class="flex items-center justify-between"><div class="flex items-center gap-space-xs"><span class="font-headline-sm text-headline-sm text-on-surface font-semibold">Ligero</span><span class="font-label-caps text-label-caps text-on-primary-container bg-primary-container px-space-xs py-0.5 rounded-full">Recomendado</span></div><div class="w-6 h-6 rounded-full bg-surface-container flex items-center justify-center check-badge opacity-0"><span class="material-symbols-outlined text-primary text-[16px]">check</span></div></div><p class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">1 a 2 caminatas o sesiones de ejercicio por semana</p></div>
+      </div>
+      <div class="activity-card cursor-pointer w-full bg-surface-container-lowest p-space-md rounded-lg shadow-sm flex items-center gap-space-md" data-val="1.55">
+        <div class="w-12 h-12 rounded-full bg-surface-container flex-shrink-0 flex items-center justify-center text-on-surface-variant icon-box"><span class="material-symbols-outlined text-[24px]">fitness_center</span></div>
+        <div class="flex-1 min-w-0"><div class="flex items-center justify-between"><span class="font-headline-sm text-headline-sm text-on-surface font-semibold">Moderado</span><div class="w-6 h-6 rounded-full bg-surface-container flex items-center justify-center check-badge opacity-0"><span class="material-symbols-outlined text-primary text-[16px]">check</span></div></div><p class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">Actividad física 3 a 5 días por semana</p></div>
+      </div>
+      <div class="activity-card cursor-pointer w-full bg-surface-container-lowest p-space-md rounded-lg shadow-sm flex items-center gap-space-md" data-val="1.725">
+        <div class="w-12 h-12 rounded-full bg-surface-container flex-shrink-0 flex items-center justify-center text-on-surface-variant icon-box"><span class="material-symbols-outlined text-[24px]">sprint</span></div>
+        <div class="flex-1 min-w-0"><div class="flex items-center justify-between"><span class="font-headline-sm text-headline-sm text-on-surface font-semibold">Intenso</span><div class="w-6 h-6 rounded-full bg-surface-container flex items-center justify-center check-badge opacity-0"><span class="material-symbols-outlined text-primary text-[16px]">check</span></div></div><p class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">Entrenamientos exigentes 6+ días a la semana</p></div>
+      </div>
+    </div>
+    <div class="w-full bg-tertiary-fixed/40 p-space-md rounded-DEFAULT flex items-start gap-space-sm mb-space-xl shadow-sm">
+      <div class="w-8 h-8 rounded-full bg-tertiary text-on-tertiary flex-shrink-0 flex items-center justify-center mt-0.5"><span class="material-symbols-outlined text-[18px]">verified_user</span></div>
+      <div class="flex-1 min-w-0"><p class="font-label-lg text-label-lg text-on-tertiary-fixed font-semibold">A tu propio compás</p><p class="font-body-sm text-body-sm text-on-tertiary-fixed-variant mt-0.5 leading-relaxed">No te preocupes, puedes cambiar esto en cualquier momento si tu rutina cambia.</p></div>
+    </div>
+    <button class="w-full h-14 rounded-full bg-surface-container text-on-surface-variant font-label-lg text-label-lg tracking-wide uppercase flex items-center justify-center gap-space-xs shadow-md" id="submit-actividad-btn" type="button" disabled>
+      <span>Continuar al plan personalizado</span><span class="material-symbols-outlined text-[20px]">arrow_forward</span>
+    </button>
+  </div>
+
+  <!-- PASO 5 - Resumen del plan -->
+  <div class="ob-step flex-col w-full" data-step="5">
+    <div class="flex items-center justify-between gap-space-sm mb-space-md">
+      <div class="flex items-center gap-space-xs bg-surface-container-high px-space-sm py-1.5 rounded-full"><span class="material-symbols-outlined text-primary text-[18px]" style="font-variation-settings: 'FILL' 1;">task_alt</span><span class="font-label-caps text-label-caps text-on-surface uppercase tracking-wider">Paso 5 de 5 · Completado</span></div>
+      <div class="inline-flex items-center gap-1 bg-tertiary-fixed text-on-tertiary-fixed px-space-sm py-1 rounded-full shadow-sm"><span class="material-symbols-outlined text-[16px]">celebration</span><span class="font-label-md text-label-md font-semibold">100% listo</span></div>
+    </div>
+    <div class="flex flex-col gap-space-xs mb-space-lg">
+      <h2 class="font-display-lg-mobile text-display-lg-mobile text-on-surface tracking-tight">¡Tu plan Lumo está listo!</h2>
+      <p class="font-body-md text-body-md text-on-surface-variant leading-relaxed">Diseñado para disfrutar el proceso en pareja, sin dietas extremas ni culpas.</p>
+    </div>
+    <div class="bg-surface-container-lowest rounded-2xl p-space-lg shadow-sm flex flex-col gap-space-md mb-space-lg">
+      <div class="flex items-center justify-between pb-space-xs">
+        <div class="flex items-center gap-space-xs"><span class="material-symbols-outlined text-primary text-[22px]">tune</span><h3 class="font-headline-sm text-headline-sm text-on-surface">Resumen de tu pauta</h3></div>
+        <span class="font-label-md text-label-md text-primary bg-primary-fixed px-2.5 py-1 rounded-full">Ritmo seguro</span>
+      </div>
+      <div class="flex items-center justify-between p-space-sm bg-surface-container-low rounded-xl">
+        <div class="flex items-center gap-space-sm"><div class="w-9 h-9 rounded-full bg-surface-container flex items-center justify-center text-on-surface-variant"><span class="material-symbols-outlined text-[20px]">monitor_weight</span></div><div class="flex flex-col"><span class="font-label-caps text-label-caps text-on-surface-variant uppercase">Punto de partida</span><span class="font-body-md text-body-md text-on-surface font-medium">Índice de Masa Corporal</span></div></div>
+        <div class="flex flex-col items-end"><span class="font-headline-sm text-headline-sm text-on-surface" id="ob5-bmi">—</span><span class="font-label-md text-label-md text-on-secondary-fixed-variant bg-secondary-fixed px-2 py-0.5 rounded-full mt-0.5" id="ob5-bmi-label">—</span></div>
+      </div>
+      <div class="flex items-center justify-between p-space-sm bg-surface-container-low rounded-xl">
+        <div class="flex items-center gap-space-sm"><div class="w-9 h-9 rounded-full bg-surface-container flex items-center justify-center text-on-surface-variant"><span class="material-symbols-outlined text-[20px]">bolt</span></div><div class="flex flex-col"><span class="font-label-caps text-label-caps text-on-surface-variant uppercase">Tu motor diario</span><span class="font-body-md text-body-md text-on-surface font-medium">Gasto basal estimado</span></div></div>
+        <div class="text-right"><span class="font-headline-sm text-headline-sm text-on-surface" id="ob5-tdee">—</span><span class="font-label-md text-label-md text-on-surface-variant block">kcal / día</span></div>
+      </div>
+      <div class="flex items-center justify-between p-space-md bg-tertiary text-on-tertiary rounded-xl shadow-sm">
+        <div class="flex items-center gap-space-sm"><div class="w-10 h-10 rounded-full bg-tertiary-container text-on-tertiary-container flex items-center justify-center"><span class="material-symbols-outlined text-[22px]" style="font-variation-settings: 'FILL' 1;">restaurant</span></div><div class="flex flex-col"><span class="font-label-caps text-label-caps text-tertiary-fixed uppercase font-bold">Meta recomendada</span><span class="font-body-lg text-body-lg font-semibold">Consumo diario</span></div></div>
+        <div class="text-right"><span class="font-headline-lg text-headline-lg font-bold" id="ob5-daily-cal">—</span><span class="font-label-md text-label-md text-tertiary-fixed block font-medium">kcal / día</span></div>
+      </div>
+      <div class="flex items-center justify-between p-space-sm bg-surface-container-low rounded-xl">
+        <div class="flex items-center gap-space-sm"><div class="w-9 h-9 rounded-full bg-surface-container flex items-center justify-center text-on-surface-variant"><span class="material-symbols-outlined text-[20px]">spa</span></div><div class="flex flex-col"><span class="font-label-caps text-label-caps text-on-surface-variant uppercase">Equilibrio consciente</span><span class="font-body-md text-body-md text-on-surface font-medium">Déficit saludable</span></div></div>
+        <div class="text-right"><span class="font-headline-sm text-headline-sm text-primary font-bold" id="ob5-deficit">—</span><span class="font-label-md text-label-md text-on-surface-variant block">kcal / día</span></div>
+      </div>
+      <div class="flex items-center justify-between p-space-sm bg-surface-container-low rounded-xl">
+        <div class="flex items-center gap-space-sm"><div class="w-9 h-9 rounded-full bg-primary-fixed flex items-center justify-center text-on-primary-fixed"><span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">flag</span></div><div class="flex flex-col"><span class="font-label-caps text-label-caps text-on-surface-variant uppercase">Horizonte de logro</span><span class="font-body-md text-body-md text-on-surface font-medium">Tiempo a tu meta</span></div></div>
+        <div class="text-right"><span class="font-headline-sm text-headline-sm text-on-surface" id="ob5-weeks">—</span><span class="font-label-md text-label-md text-on-surface-variant block">semanas</span></div>
+      </div>
+    </div>
+    <div class="flex items-start gap-space-xs px-space-xs mb-space-xl">
+      <span class="material-symbols-outlined text-on-surface-variant/70 text-[18px] shrink-0 mt-0.5">info</span>
+      <p class="font-body-sm text-body-sm text-on-surface-variant/80 leading-relaxed">Esto es una estimación referencial basada en fórmulas científicas estándar, no constituye consejo médico ni nutricional personalizado.</p>
+    </div>
+    <button class="w-full h-14 bg-primary text-on-primary rounded-full font-headline-sm text-headline-sm flex items-center justify-center gap-space-xs shadow-md" id="finish-onboarding" type="button">
+      <span>Ir a mi dashboard</span><span class="material-symbols-outlined text-[22px]">arrow_forward</span>
+    </button>
+  </div>
+</div>
+
+<!-- ============ APP ============ -->
+<div id="screen-app" class="screen flex-col w-full">
+
+  <!-- VISTA INICIO -->
+  <div class="view active flex-col w-full gap-space-md" data-view="inicio">
+    <section class="flex items-center justify-between gap-space-sm bg-surface-container-lowest p-space-md rounded-lg shadow-sm">
+      <div class="flex items-center gap-space-sm min-w-0">
+        <div class="relative flex-shrink-0">
+          <div class="w-14 h-14 rounded-full bg-primary-fixed p-1 flex items-center justify-center shadow-sm"><img id="home-avatar" alt="Mascota" class="w-full h-full object-contain rounded-full" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyMDAgMjAwIiB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCI+CiAgPGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMCwgNSkiPgogICAgPGVsbGlwc2UgY3g9IjEwMCIgY3k9IjE4MCIgcng9IjY1IiByeT0iMTIiIGZpbGw9IiNGMUQ3REYiIC8+CiAgICA8cGF0aCBkPSJNNTIgMTQ1IEMzNSAxMjUgMzUgNzUgNjAgNDUgQzgyIDIwIDEyMCAyMCAxNDIgNDUgQzE2NSA3MiAxNjUgMTI1IDE0OCAxNDUgQzEzMiAxNjYgNjggMTY2IDUyIDE0NSBaIiBmaWxsPSIjRDQ1MzdFIiAvPgogICAgPHBhdGggZD0iTTY4IDEzNSBDNTggMTE1IDYyIDgwIDgwIDYwIEM5MiA0OCAxMTAgNDggMTIyIDYwIEMxMzUgNzUgMTQwIDExNSAxMzIgMTM1IEMxMjIgMTUyIDc4IDE1MiA2OCAxMzUgWiIgZmlsbD0iI0RFNjg4RiIgb3BhY2l0eT0iMC40IiAvPgogICAgPGNpcmNsZSBjeD0iNjgiIGN5PSI5OCIgcj0iMTAiIGZpbGw9IiNGNDk1QjIiIG9wYWNpdHk9IjAuOCIgLz4KICAgIDxjaXJjbGUgY3g9IjEzMiIgY3k9Ijk4IiByPSIxMCIgZmlsbD0iI0Y0OTVCMiIgb3BhY2l0eT0iMC44IiAvPgogICAgPGNpcmNsZSBjeD0iODIiIGN5PSI4NSIgcj0iNyIgZmlsbD0iIzFGMTUxOCIgLz4KICAgIDxjaXJjbGUgY3g9IjExOCIgY3k9Ijg1IiByPSI3IiBmaWxsPSIjMUYxNTE4IiAvPgogICAgPGNpcmNsZSBjeD0iODAiIGN5PSI4MiIgcj0iMi41IiBmaWxsPSIjRkZGRkZGIiAvPgogICAgPGNpcmNsZSBjeD0iMTE2IiBjeT0iODIiIHI9IjIuNSIgZmlsbD0iI0ZGRkZGRiIgLz4KICAgIDxwYXRoIGQ9Ik05MiA5OCBRMTAwIDEwNiAxMDggOTgiIHN0cm9rZT0iIzFGMTUxOCIgc3Ryb2tlLXdpZHRoPSIzLjUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgZmlsbD0ibm9uZSIgLz4KICAgIDxjaXJjbGUgY3g9IjEwMCIgY3k9IjIyIiByPSI1IiBmaWxsPSIjRUY5RjI3IiAvPgogICAgPHBhdGggZD0iTTEwMCAyNyBRMTAwIDM0IDEwMCAzOCIgc3Ryb2tlPSIjRUY5RjI3IiBzdHJva2Utd2lkdGg9IjMiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgZmlsbD0ibm9uZSIgLz4KICA8L2c+Cjwvc3ZnPgo="/></div>
+        </div>
+        <div class="min-w-0"><h2 class="font-headline-sm text-headline-sm text-on-surface truncate" id="home-greeting">¡Hola!</h2><p class="font-body-sm text-body-sm text-on-surface-variant truncate">Hoy es un gran día para avanzar juntos</p></div>
+      </div>
+      <button class="flex-shrink-0 inline-flex items-center gap-1 bg-surface-container-high px-space-sm py-space-xs rounded-full shadow-sm text-on-surface" id="switch-profile" type="button">
+        <span class="material-symbols-outlined text-[16px] text-primary">sync_alt</span><span class="font-label-md text-label-md">Cambiar</span>
+      </button>
+    </section>
+
+    <section class="bg-surface-container-lowest p-space-md rounded-lg shadow-sm flex flex-col gap-space-sm">
+      <div class="flex items-start justify-between">
+        <div class="flex items-center gap-space-xs">
+          <div class="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center text-[#EF9F27]"><span class="material-symbols-outlined text-[26px]" style="font-variation-settings: 'FILL' 1;">local_fire_department</span></div>
+          <div><span class="font-label-caps text-label-caps uppercase text-on-surface-variant tracking-wider">Racha</span><div class="font-headline-lg text-headline-lg text-[#EF9F27] leading-none mt-0.5"><span id="streak-count">0</span> DÍAS</div></div>
+        </div>
+      </div>
+      <div class="bg-surface-container-low p-space-sm rounded-DEFAULT flex items-center gap-space-xs">
+        <span class="material-symbols-outlined text-secondary text-[20px] flex-shrink-0" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+        <p class="font-body-sm text-body-sm text-on-surface leading-snug" id="streak-hint">Cumple tu meta de hoy para mantenerla.</p>
+      </div>
+      <button class="w-full h-12 rounded-full bg-tertiary text-on-tertiary flex items-center justify-center gap-space-xs shadow-md font-label-lg text-label-lg" id="check-in-btn" type="button">
+        <span class="material-symbols-outlined text-[20px]" id="streakIcon">done</span><span id="streakLabel">Marcar hoy como cumplido</span>
+      </button>
+    </section>
+
+    <section class="bg-surface-container-lowest p-space-md rounded-lg shadow-sm flex flex-col gap-space-sm">
+      <div class="flex items-center justify-between">
+        <div><h3 class="font-headline-sm text-headline-sm text-on-surface">Camino a la meta</h3><p class="font-body-sm text-body-sm text-on-surface-variant">Ritmo constante</p></div>
+        <span class="bg-primary-fixed text-on-primary-fixed font-label-lg text-label-lg px-space-xs py-1 rounded-full"><span id="progress-pct">0</span>% completado</span>
+      </div>
+      <div class="relative pt-8 pb-3 px-2">
+        <div class="absolute top-0 flex flex-col items-center transition-all duration-500" id="mascot-runner" style="left: 0%; transform: translateX(-50%);">
+          <div class="bg-surface-container-lowest px-2 py-0.5 rounded-full shadow-sm font-label-caps text-label-caps text-primary mb-1" id="mascot-bubble">0 kg</div>
+          <img id="progress-avatar" alt="Mascota" class="w-9 h-9 object-contain drop-shadow-sm" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyMDAgMjAwIiB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCI+CiAgPGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMCwgNSkiPgogICAgPGVsbGlwc2UgY3g9IjEwMCIgY3k9IjE4MCIgcng9IjY1IiByeT0iMTIiIGZpbGw9IiNGMUQ3REYiIC8+CiAgICA8cGF0aCBkPSJNNTIgMTQ1IEMzNSAxMjUgMzUgNzUgNjAgNDUgQzgyIDIwIDEyMCAyMCAxNDIgNDUgQzE2NSA3MiAxNjUgMTI1IDE0OCAxNDUgQzEzMiAxNjYgNjggMTY2IDUyIDE0NSBaIiBmaWxsPSIjRDQ1MzdFIiAvPgogICAgPHBhdGggZD0iTTY4IDEzNSBDNTggMTE1IDYyIDgwIDgwIDYwIEM5MiA0OCAxMTAgNDggMTIyIDYwIEMxMzUgNzUgMTQwIDExNSAxMzIgMTM1IEMxMjIgMTUyIDc4IDE1MiA2OCAxMzUgWiIgZmlsbD0iI0RFNjg4RiIgb3BhY2l0eT0iMC40IiAvPgogICAgPGNpcmNsZSBjeD0iNjgiIGN5PSI5OCIgcj0iMTAiIGZpbGw9IiNGNDk1QjIiIG9wYWNpdHk9IjAuOCIgLz4KICAgIDxjaXJjbGUgY3g9IjEzMiIgY3k9Ijk4IiByPSIxMCIgZmlsbD0iI0Y0OTVCMiIgb3BhY2l0eT0iMC44IiAvPgogICAgPGNpcmNsZSBjeD0iODIiIGN5PSI4NSIgcj0iNyIgZmlsbD0iIzFGMTUxOCIgLz4KICAgIDxjaXJjbGUgY3g9IjExOCIgY3k9Ijg1IiByPSI3IiBmaWxsPSIjMUYxNTE4IiAvPgogICAgPGNpcmNsZSBjeD0iODAiIGN5PSI4MiIgcj0iMi41IiBmaWxsPSIjRkZGRkZGIiAvPgogICAgPGNpcmNsZSBjeD0iMTE2IiBjeT0iODIiIHI9IjIuNSIgZmlsbD0iI0ZGRkZGRiIgLz4KICAgIDxwYXRoIGQ9Ik05MiA5OCBRMTAwIDEwNiAxMDggOTgiIHN0cm9rZT0iIzFGMTUxOCIgc3Ryb2tlLXdpZHRoPSIzLjUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgZmlsbD0ibm9uZSIgLz4KICAgIDxjaXJjbGUgY3g9IjEwMCIgY3k9IjIyIiByPSI1IiBmaWxsPSIjRUY5RjI3IiAvPgogICAgPHBhdGggZD0iTTEwMCAyNyBRMTAwIDM0IDEwMCAzOCIgc3Ryb2tlPSIjRUY5RjI3IiBzdHJva2Utd2lkdGg9IjMiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgZmlsbD0ibm9uZSIgLz4KICA8L2c+Cjwvc3ZnPgo="/>
+        </div>
+        <div class="w-full h-3.5 bg-surface-container-high rounded-full overflow-hidden flex shadow-inner"><div class="h-full bg-primary-container rounded-full transition-all duration-500" id="progress-fill" style="width: 0%;"></div></div>
+        <div class="flex justify-between items-center mt-2 font-label-md text-label-md text-on-surface-variant">
+          <span id="progress-current">Inicio: — kg</span>
+          <span class="flex items-center gap-0.5 text-tertiary"><span class="material-symbols-outlined text-[14px]">flag</span><span id="progress-goal">Meta: — kg</span></span>
+        </div>
+      </div>
+      <div class="grid grid-cols-2 gap-space-sm pt-space-xs">
+        <div class="bg-surface-container-low p-space-sm rounded-DEFAULT flex flex-col"><span class="font-body-sm text-body-sm text-on-surface-variant">Peso actual</span><span class="font-headline-sm text-headline-sm text-on-surface mt-0.5" id="stat-current-weight">— kg</span></div>
+        <div class="bg-surface-container-low p-space-sm rounded-DEFAULT flex flex-col"><span class="font-body-sm text-body-sm text-on-surface-variant">Logrado</span><span class="font-headline-sm text-headline-sm text-primary mt-0.5" id="stat-lost">— kg</span></div>
+      </div>
+    </section>
+
+    <section class="bg-surface-container-lowest p-space-md rounded-lg shadow-sm flex flex-col gap-space-sm">
+      <div class="flex items-center justify-between"><div class="flex items-center gap-1.5"><span class="material-symbols-outlined text-primary text-[20px]">groups</span><h3 class="font-headline-sm text-headline-sm text-on-surface">Dúo Lumo hoy</h3></div></div>
+      <div class="grid grid-cols-2 gap-space-sm relative">
+        <div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-surface-container-lowest shadow-md flex items-center justify-center z-10"><span class="font-label-caps text-label-caps text-on-surface-variant font-bold">VS</span></div>
+        <div class="bg-primary-fixed/40 p-space-sm rounded-DEFAULT flex flex-col items-center text-center gap-1 shadow-sm">
+          <div class="w-12 h-12 rounded-full bg-surface-container-lowest p-1 shadow-sm"><img alt="Mascota" class="w-full h-full object-contain" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyMDAgMjAwIiB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCI+CiAgPGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMCwgNSkiPgogICAgPGVsbGlwc2UgY3g9IjEwMCIgY3k9IjE4MCIgcng9IjY1IiByeT0iMTIiIGZpbGw9IiNGMUQ3REYiIC8+CiAgICA8cGF0aCBkPSJNNTIgMTQ1IEMzNSAxMjUgMzUgNzUgNjAgNDUgQzgyIDIwIDEyMCAyMCAxNDIgNDUgQzE2NSA3MiAxNjUgMTI1IDE0OCAxNDUgQzEzMiAxNjYgNjggMTY2IDUyIDE0NSBaIiBmaWxsPSIjRDQ1MzdFIiAvPgogICAgPHBhdGggZD0iTTY4IDEzNSBDNTggMTE1IDYyIDgwIDgwIDYwIEM5MiA0OCAxMTAgNDggMTIyIDYwIEMxMzUgNzUgMTQwIDExNSAxMzIgMTM1IEMxMjIgMTUyIDc4IDE1MiA2OCAxMzUgWiIgZmlsbD0iI0RFNjg4RiIgb3BhY2l0eT0iMC40IiAvPgogICAgPGNpcmNsZSBjeD0iNjgiIGN5PSI5OCIgcj0iMTAiIGZpbGw9IiNGNDk1QjIiIG9wYWNpdHk9IjAuOCIgLz4KICAgIDxjaXJjbGUgY3g9IjEzMiIgY3k9Ijk4IiByPSIxMCIgZmlsbD0iI0Y0OTVCMiIgb3BhY2l0eT0iMC44IiAvPgogICAgPGNpcmNsZSBjeD0iODIiIGN5PSI4NSIgcj0iNyIgZmlsbD0iIzFGMTUxOCIgLz4KICAgIDxjaXJjbGUgY3g9IjExOCIgY3k9Ijg1IiByPSI3IiBmaWxsPSIjMUYxNTE4IiAvPgogICAgPGNpcmNsZSBjeD0iODAiIGN5PSI4MiIgcj0iMi41IiBmaWxsPSIjRkZGRkZGIiAvPgogICAgPGNpcmNsZSBjeD0iMTE2IiBjeT0iODIiIHI9IjIuNSIgZmlsbD0iI0ZGRkZGRiIgLz4KICAgIDxwYXRoIGQ9Ik05MiA5OCBRMTAwIDEwNiAxMDggOTgiIHN0cm9rZT0iIzFGMTUxOCIgc3Ryb2tlLXdpZHRoPSIzLjUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgZmlsbD0ibm9uZSIgLz4KICAgIDxjaXJjbGUgY3g9IjEwMCIgY3k9IjIyIiByPSI1IiBmaWxsPSIjRUY5RjI3IiAvPgogICAgPHBhdGggZD0iTTEwMCAyNyBRMTAwIDM0IDEwMCAzOCIgc3Ryb2tlPSIjRUY5RjI3IiBzdHJva2Utd2lkdGg9IjMiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgZmlsbD0ibm9uZSIgLz4KICA8L2c+Cjwvc3ZnPgo="/></div>
+          <span class="font-headline-sm text-headline-sm text-on-surface" id="vs-name-a">Liss</span>
+          <span class="inline-flex items-center gap-0.5 text-[#EF9F27] font-label-md text-label-md"><span class="material-symbols-outlined text-[14px]" style="font-variation-settings: 'FILL' 1;">local_fire_department</span><span id="vs-streak-a">0 días</span></span>
+        </div>
+        <div class="bg-secondary-fixed/50 p-space-sm rounded-DEFAULT flex flex-col items-center text-center gap-1 shadow-sm">
+          <div class="w-12 h-12 rounded-full bg-surface-container-lowest p-1 shadow-sm"><img alt="Mascota" class="w-full h-full object-contain" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyMDAgMjAwIiB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCI+CiAgPGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMCwgNSkiPgogICAgPGVsbGlwc2UgY3g9IjEwMCIgY3k9IjE4MCIgcng9IjY1IiByeT0iMTIiIGZpbGw9IiNEM0U0RjQiIC8+CiAgICA8cGF0aCBkPSJNNTUgOTAgQzM1IDEyNSA0MCAxNjAgMzAgMTcwIEM1NSAxNjUgNzUgMTYwIDg1IDE1NSBaIiBmaWxsPSIjRUY5RjI3IiAvPgogICAgPHBhdGggZD0iTTE0NSA5MCBDMTY1IDEyNSAxNjAgMTYwIDE3MCAxNzAgQzE0NSAxNjUgMTI1IDE2MCAxMTUgMTU1IFoiIGZpbGw9IiNEOThBMTkiIC8+CiAgICA8cGF0aCBkPSJNNTIgMTQ1IEMzNSAxMjIgMzYgNzAgNjIgNDIgQzg0IDE4IDExOCAxOCAxNDAgNDIgQzE2NCA3MCAxNjUgMTIyIDE0OCAxNDUgQzEzMiAxNjYgNjggMTY2IDUyIDE0NSBaIiBmaWxsPSIjMzc4QUREIiAvPgogICAgPHBhdGggZD0iTTY4IDEzNSBDNTggMTE1IDYyIDgwIDgwIDYwIEM5MiA0OCAxMTAgNDggMTIyIDYwIEMxMzUgNzUgMTQwIDExNSAxMzIgMTM1IEMxMjIgMTUyIDc4IDE1MiA2OCAxMzUgWiIgZmlsbD0iIzU4OUZFNSIgb3BhY2l0eT0iMC40IiAvPgogICAgPHBhdGggZD0iTTY0IDc2IEM3NiA3MCA5MiA3NCAxMDAgODAgQzEwOCA3NCAxMjQgNzAgMTM2IDc2IEMxNDQgODAgMTQ0IDk0IDEzNSA5NiBDMTI0IDk4IDEwOCA5MiAxMDAgODUgQzkyIDkyIDc2IDk4IDY1IDk2IEM1NiA5NCA1NiA4MCA2NCA3NiBaIiBmaWxsPSIjMUM0RjgyIiAvPgogICAgPGNpcmNsZSBjeD0iODIiIGN5PSI4NSIgcj0iNiIgZmlsbD0iI0ZGRkZGRiIgLz4KICAgIDxjaXJjbGUgY3g9IjExOCIgY3k9Ijg1IiByPSI2IiBmaWxsPSIjRkZGRkZGIiAvPgogICAgPGNpcmNsZSBjeD0iODMiIGN5PSI4NSIgcj0iMy41IiBmaWxsPSIjMEUyODQ0IiAvPgogICAgPGNpcmNsZSBjeD0iMTE5IiBjeT0iODUiIHI9IjMuNSIgZmlsbD0iIzBFMjg0NCIgLz4KICAgIDxjaXJjbGUgY3g9Ijg0IiBjeT0iODMiIHI9IjEuNSIgZmlsbD0iI0ZGRkZGRiIgLz4KICAgIDxjaXJjbGUgY3g9IjEyMCIgY3k9IjgzIiByPSIxLjUiIGZpbGw9IiNGRkZGRkYiIC8+CiAgICA8cGF0aCBkPSJNOTQgMTAyIFExMDIgMTA4IDExMCAxMDIiIHN0cm9rZT0iIzBFMjg0NCIgc3Ryb2tlLXdpZHRoPSIzIiBzdHJva2UtbGluZWNhcD0icm91bmQiIGZpbGw9Im5vbmUiIC8+CiAgPC9nPgo8L3N2Zz4K"/></div>
+          <span class="font-headline-sm text-headline-sm text-on-surface" id="vs-name-b">Iker</span>
+          <span class="inline-flex items-center gap-0.5 text-[#EF9F27] font-label-md text-label-md"><span class="material-symbols-outlined text-[14px]" style="font-variation-settings: 'FILL' 1;">local_fire_department</span><span id="vs-streak-b">0 días</span></span>
+        </div>
+      </div>
+    </section>
+
+    <section class="bg-surface-container-lowest p-space-md rounded-lg shadow-sm flex flex-col gap-space-sm">
+      <div class="flex items-center justify-between">
+        <div><h3 class="font-headline-sm text-headline-sm text-on-surface">Calorías de hoy</h3></div>
+        <div class="text-right"><span class="font-headline-sm text-headline-sm text-primary" id="cal-remaining">—</span></div>
+      </div>
+      <div class="flex flex-col gap-1">
+        <div class="w-full h-3 bg-surface-container-high rounded-full overflow-hidden"><div class="h-full bg-primary rounded-full transition-all duration-500" id="cal-fill" style="width: 0%;"></div></div>
+      </div>
+      <ul class="flex flex-col gap-space-xs mt-1" id="food-log"></ul>
+      <div class="grid grid-cols-2 gap-space-sm pt-space-xs">
+        <button class="h-12 rounded-full bg-surface-container flex items-center justify-center gap-1.5 text-on-surface font-label-lg text-label-lg shadow-sm" id="add-food-manual" type="button"><span class="material-symbols-outlined text-[20px] text-primary">add</span><span>Agregar comida</span></button>
+        <button class="h-12 rounded-full bg-primary-fixed flex items-center justify-center gap-1.5 text-on-primary-fixed font-label-lg text-label-lg shadow-sm" id="add-food-photo" type="button"><span class="material-symbols-outlined text-[20px]">photo_camera</span><span>Foto del platillo</span></button>
+      </div>
+    </section>
+  </div>
+
+  <!-- VISTA EJERCICIO -->
+  <div class="view flex-col w-full gap-space-lg" data-view="ejercicio">
+    <div class="flex flex-col gap-1">
+      <h2 class="font-headline-lg text-headline-lg text-on-surface">Entrenamiento y movimiento</h2>
+      <p class="font-body-md text-body-md text-on-surface-variant">Suma energía para el equipo.</p>
+    </div>
+    <section class="bg-surface-container-lowest rounded-[22px] p-space-md shadow-sm flex flex-col gap-space-sm">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-space-xs">
+          <div class="w-9 h-9 rounded-full bg-[#FC4C02]/10 flex items-center justify-center text-[#FC4C02]">
+            <svg aria-label="Strava" class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M15.387 17.944l-2.089-4.116h-3.065L15.387 24l5.15-10.172h-3.066m-7.008-5.599l2.836 5.598h4.172L10.463 0l-7.925 15.688h4.172"></path></svg>
+          </div>
+          <div><h3 class="font-headline-sm text-headline-sm text-on-surface leading-tight">Strava</h3><span class="font-label-md text-label-md text-on-surface-variant" id="strava-status">No conectado</span></div>
+        </div>
+        <button class="bg-surface-container text-on-surface font-label-lg text-label-lg px-4 py-2 rounded-full" id="strava-btn" type="button">Conectar</button>
+      </div>
+    </section>
+    <section class="flex flex-col gap-space-sm">
+      <div class="flex items-center justify-between px-1"><h3 class="font-headline-sm text-headline-sm text-on-surface">Grupos musculares</h3></div>
+      <div class="grid grid-cols-2 gap-space-xs" id="muscle-grid"></div>
+    </section>
+    <div id="routine-detail" class="flex-col gap-space-xs hidden"></div>
+  </div>
+
+  <!-- VISTA PERFIL -->
+  <div class="view flex-col w-full gap-space-md" data-view="perfil">
+    <section class="w-full bg-surface-container-lowest rounded-lg p-space-md shadow-sm flex flex-col gap-space-md">
+      <div class="flex items-start justify-between">
+        <div class="flex items-center gap-space-sm">
+          <div class="relative w-20 h-20 rounded-full bg-primary-fixed/40 flex items-center justify-center p-1"><img id="profile-avatar" alt="Mascota" class="w-full h-full object-contain" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyMDAgMjAwIiB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCI+CiAgPGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMCwgNSkiPgogICAgPGVsbGlwc2UgY3g9IjEwMCIgY3k9IjE4MCIgcng9IjY1IiByeT0iMTIiIGZpbGw9IiNGMUQ3REYiIC8+CiAgICA8cGF0aCBkPSJNNTIgMTQ1IEMzNSAxMjUgMzUgNzUgNjAgNDUgQzgyIDIwIDEyMCAyMCAxNDIgNDUgQzE2NSA3MiAxNjUgMTI1IDE0OCAxNDUgQzEzMiAxNjYgNjggMTY2IDUyIDE0NSBaIiBmaWxsPSIjRDQ1MzdFIiAvPgogICAgPHBhdGggZD0iTTY4IDEzNSBDNTggMTE1IDYyIDgwIDgwIDYwIEM5MiA0OCAxMTAgNDggMTIyIDYwIEMxMzUgNzUgMTQwIDExNSAxMzIgMTM1IEMxMjIgMTUyIDc4IDE1MiA2OCAxMzUgWiIgZmlsbD0iI0RFNjg4RiIgb3BhY2l0eT0iMC40IiAvPgogICAgPGNpcmNsZSBjeD0iNjgiIGN5PSI5OCIgcj0iMTAiIGZpbGw9IiNGNDk1QjIiIG9wYWNpdHk9IjAuOCIgLz4KICAgIDxjaXJjbGUgY3g9IjEzMiIgY3k9Ijk4IiByPSIxMCIgZmlsbD0iI0Y0OTVCMiIgb3BhY2l0eT0iMC44IiAvPgogICAgPGNpcmNsZSBjeD0iODIiIGN5PSI4NSIgcj0iNyIgZmlsbD0iIzFGMTUxOCIgLz4KICAgIDxjaXJjbGUgY3g9IjExOCIgY3k9Ijg1IiByPSI3IiBmaWxsPSIjMUYxNTE4IiAvPgogICAgPGNpcmNsZSBjeD0iODAiIGN5PSI4MiIgcj0iMi41IiBmaWxsPSIjRkZGRkZGIiAvPgogICAgPGNpcmNsZSBjeD0iMTE2IiBjeT0iODIiIHI9IjIuNSIgZmlsbD0iI0ZGRkZGRiIgLz4KICAgIDxwYXRoIGQ9Ik05MiA5OCBRMTAwIDEwNiAxMDggOTgiIHN0cm9rZT0iIzFGMTUxOCIgc3Ryb2tlLXdpZHRoPSIzLjUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgZmlsbD0ibm9uZSIgLz4KICAgIDxjaXJjbGUgY3g9IjEwMCIgY3k9IjIyIiByPSI1IiBmaWxsPSIjRUY5RjI3IiAvPgogICAgPHBhdGggZD0iTTEwMCAyNyBRMTAwIDM0IDEwMCAzOCIgc3Ryb2tlPSIjRUY5RjI3IiBzdHJva2Utd2lkdGg9IjMiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgZmlsbD0ibm9uZSIgLz4KICA8L2c+Cjwvc3ZnPgo="/></div>
+          <div class="flex flex-col"><h2 class="font-headline-sm text-headline-sm text-on-surface" id="profile-name">—</h2><span class="bg-primary-fixed text-on-primary-fixed px-space-xs py-0.5 rounded-full font-label-caps text-label-caps uppercase mt-1" id="profile-badge">—</span></div>
+        </div>
+      </div>
+      <div class="grid grid-cols-2 gap-space-xs w-full">
+        <div class="bg-surface-container-low rounded-DEFAULT p-space-sm flex flex-col justify-between"><span class="font-label-md text-label-md text-on-surface-variant">Peso actual</span><span class="font-headline-md text-headline-md text-on-surface font-bold mt-1" id="stat-weight">—</span></div>
+        <div class="bg-surface-container-low rounded-DEFAULT p-space-sm flex flex-col justify-between"><span class="font-label-md text-label-md text-on-surface-variant">Meta final</span><span class="font-headline-md text-headline-md text-primary font-bold mt-1" id="stat-goal">—</span></div>
+        <div class="bg-surface-container-low rounded-DEFAULT p-space-sm flex flex-col justify-between"><span class="font-label-md text-label-md text-on-surface-variant">IMC actual</span><span class="font-headline-md text-headline-md text-on-surface font-bold mt-1" id="stat-bmi">—</span></div>
+        <div class="bg-surface-container-low rounded-DEFAULT p-space-sm flex flex-col justify-between"><span class="font-label-md text-label-md text-on-surface-variant">Meta calórica</span><span class="font-headline-md text-headline-md text-on-surface font-bold mt-1" id="stat-cal">—</span></div>
+      </div>
+    </section>
+    <section class="w-full bg-surface-container-lowest rounded-lg p-space-md shadow-sm flex flex-col gap-space-md">
+      <h3 class="font-headline-sm text-headline-sm text-on-surface">Registrar nuevo pesaje</h3>
+      <div class="w-full bg-surface-container-low rounded-full p-1.5 flex items-center justify-between">
+        <button class="w-12 h-12 rounded-full bg-surface-container-lowest text-on-surface flex items-center justify-center shadow-sm" id="btn-minus" type="button"><span class="material-symbols-outlined text-[20px]">remove</span></button>
+        <div class="flex items-baseline gap-1"><span class="font-display-lg-mobile text-display-lg-mobile text-primary font-bold tracking-tight" id="weight-value">—</span><span class="font-headline-sm text-headline-sm text-on-surface-variant">kg</span></div>
+        <button class="w-12 h-12 rounded-full bg-surface-container-lowest text-on-surface flex items-center justify-center shadow-sm" id="btn-plus" type="button"><span class="material-symbols-outlined text-[20px]">add</span></button>
+      </div>
+      <button class="w-full h-12 rounded-full bg-primary text-on-primary font-label-lg text-label-lg flex items-center justify-center gap-space-xs shadow-sm" id="save-weight-btn" type="button"><span class="material-symbols-outlined text-[18px]">favorite</span><span id="save-text">Guardar peso de hoy</span></button>
+    </section>
+    <section class="w-full bg-surface-container-low rounded-lg p-space-md flex items-start gap-space-sm shadow-sm">
+      <div class="w-10 h-10 rounded-full bg-surface-container-high flex-shrink-0 flex items-center justify-center text-tertiary"><span class="material-symbols-outlined text-[22px]">calendar_clock</span></div>
+      <div class="flex flex-col gap-0.5"><span class="font-label-lg text-label-lg text-on-surface font-semibold">Sugerencia consciente</span><p class="font-body-sm text-body-sm text-on-surface-variant leading-relaxed" id="weigh-suggestion">—</p></div>
+    </section>
+    <button class="w-full h-12 rounded-full bg-surface-container text-on-surface-variant font-label-lg text-label-lg" id="reset-app" type="button">Reiniciar datos de prueba</button>
+  </div>
+
+</div>
+
+</main>
+
+<nav class="fixed bottom-0 max-w-[540px] w-full z-50 pb-safe bg-surface/90 backdrop-blur-xl shadow-[0_-4px_20px_rgba(45,37,34,0.05)] hidden" id="tabbar">
+  <div class="h-20 px-space-md flex items-center justify-around">
+    <button class="tab-btn flex flex-col items-center justify-center gap-1 min-w-[64px] min-h-[48px] py-1 px-space-xs rounded-full text-primary font-bold" data-view="inicio"><span class="material-symbols-outlined text-[24px]">home</span><span class="font-label-md text-label-md">Inicio</span></button>
+    <button class="tab-btn flex flex-col items-center justify-center gap-1 min-w-[64px] min-h-[48px] py-1 px-space-xs rounded-full text-on-surface-variant" data-view="ejercicio"><span class="material-symbols-outlined text-[24px]">fitness_center</span><span class="font-label-md text-label-md">Ejercicio</span></button>
+    <button class="tab-btn flex flex-col items-center justify-center gap-1 min-w-[64px] min-h-[48px] py-1 px-space-xs rounded-full text-on-surface-variant" data-view="perfil"><span class="material-symbols-outlined text-[24px]">face</span><span class="font-label-md text-label-md">Perfil</span></button>
+  </div>
+</nav>
+
+</div>
+<script src="app.js"></script>
+</body>
+</html>
