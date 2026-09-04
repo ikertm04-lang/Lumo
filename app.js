@@ -785,7 +785,7 @@
       li.textContent = "Aún no registras comidas hoy.";
       list.appendChild(li);
     } else {
-      items.forEach((item) => {
+      items.forEach((item, idx) => {
         // Compatibilidad con registros antiguos (formato { name, kcal })
         const desc = item.descripcion ?? item.name ?? "Comida";
         const kcal = item.calorias ?? item.kcal ?? 0;
@@ -801,10 +801,40 @@
           escapeHtml(desc) +
           '</span><span class="font-label-md text-label-md text-on-surface-variant shrink-0">' +
           Math.round(kcal) +
-          " kcal</span>";
+          '</span>' +
+          '<div class="flex items-center gap-0.5 shrink-0">' +
+          '<button type="button" class="w-7 h-7 rounded-full flex items-center justify-center text-on-surface-variant" data-action="edit" data-index="' +
+          idx +
+          '" aria-label="Editar"><span class="material-symbols-outlined text-[16px]">edit</span></button>' +
+          '<button type="button" class="w-7 h-7 rounded-full flex items-center justify-center text-on-surface-variant" data-action="delete" data-index="' +
+          idx +
+          '" aria-label="Eliminar"><span class="material-symbols-outlined text-[16px]">delete</span></button>' +
+          "</div>";
         list.appendChild(li);
       });
     }
+  }
+
+  function handleFoodLogClick(e) {
+    const btn = e.target.closest("[data-action]");
+    if (!btn) return;
+    const index = parseInt(btn.getAttribute("data-index"), 10);
+    const action = btn.getAttribute("data-action");
+    if (action === "edit") openFoodModalForEdit(index);
+    else if (action === "delete") deleteFoodEntry(index);
+  }
+
+  function deleteFoodEntry(index) {
+    const data = currentData();
+    const today = todayKey();
+    const items = data.foodLog[today] || [];
+    const item = items[index];
+    if (!item) return;
+    const desc = item.descripcion ?? item.name ?? "este registro";
+    if (!confirm('¿Eliminar "' + desc + '" de tu registro de hoy?')) return;
+    items.splice(index, 1);
+    saveState();
+    renderFoodLog();
   }
 
   function escapeHtml(s) {
@@ -822,6 +852,7 @@
     method: "lista",
     photoBase64: null, // sin el prefijo data:...;base64,
     draft: null, // { descripcion, calorias, proteinas, carbohidratos, grasas }
+    editingIndex: null, // índice dentro de foodLog[today] si se está editando, o null si es nuevo
   };
 
   function openFoodModal(defaultMethod) {
@@ -829,6 +860,9 @@
     foodModal.method = defaultMethod || "lista";
     foodModal.photoBase64 = null;
     foodModal.draft = null;
+    foodModal.editingIndex = null;
+    $("food-modal-mode-label").textContent = "Registrar comida";
+    $("food-save-label").textContent = "Guardar registro";
 
     selectMealType(foodModal.mealType);
     selectFoodMethod(foodModal.method);
@@ -838,6 +872,45 @@
     $("food-search-input").value = "";
     renderFoodListResults("");
     hideResultCard();
+
+    $("food-modal-backdrop").classList.add("active");
+    $("food-modal-backdrop").classList.remove("hidden");
+  }
+
+  // Abre el modal directamente sobre la tarjeta de resultado, con los
+  // datos de un registro ya existente cargados para poder ajustarlos.
+  function openFoodModalForEdit(index) {
+    const data = currentData();
+    const items = data.foodLog[todayKey()] || [];
+    const item = items[index];
+    if (!item) return;
+
+    foodModal.mealType = item.tipo || getMealTypeByHour();
+    foodModal.method = item.metodo || "lista";
+    foodModal.photoBase64 = null;
+    foodModal.editingIndex = index;
+    $("food-modal-mode-label").textContent = "Editar comida";
+    $("food-save-label").textContent = "Guardar cambios";
+
+    selectMealType(foodModal.mealType);
+    selectFoodMethod(foodModal.method);
+    resetPhotoPanel();
+    $("food-text-input").value = "";
+    $("text-analyze-btn").disabled = true;
+    $("food-search-input").value = "";
+    renderFoodListResults("");
+
+    showResultCard(
+      {
+        descripcion: item.descripcion ?? item.name ?? "",
+        calorias: item.calorias ?? item.kcal ?? 0,
+        proteinas: item.proteinas ?? 0,
+        carbohidratos: item.carbohidratos ?? 0,
+        grasas: item.grasas ?? 0,
+        note: "Editando un registro ya guardado. Ajusta lo que necesites.",
+      },
+      "Editando registro"
+    );
 
     $("food-modal-backdrop").classList.add("active");
     $("food-modal-backdrop").classList.remove("hidden");
@@ -877,21 +950,81 @@
     $("photo-placeholder-text").textContent = "Toma o sube una foto de tu platillo";
     $("photo-analyze-btn").disabled = true;
     $("photo-input").value = "";
+    $("photo-size-info").classList.add("hidden");
+    $("photo-size-info").classList.remove("flex");
   }
 
-  function handlePhotoSelected(file) {
+  // Redimensiona y comprime la imagen en el navegador (canvas) antes de
+  // convertirla a base64. Esto evita mandar fotos de varios MB (las que
+  // salen directo de la cámara del celular) a la API de IA — son más
+  // lentas de subir, cuestan más tokens/cuota, y no aportan mejor
+  // estimación que una versión más chica.
+  function compressImage(file, maxDim, quality) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const img = new Image();
+        img.onload = () => {
+          let { width, height } = img;
+          if (width > height && width > maxDim) {
+            height = Math.round((height * maxDim) / width);
+            width = maxDim;
+          } else if (height >= width && height > maxDim) {
+            width = Math.round((width * maxDim) / height);
+            height = maxDim;
+          }
+          const canvas = document.createElement("canvas");
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext("2d");
+          ctx.drawImage(img, 0, 0, width, height);
+          resolve(canvas.toDataURL("image/jpeg", quality));
+        };
+        img.onerror = () => reject(new Error("No se pudo leer la imagen"));
+        img.src = reader.result;
+      };
+      reader.onerror = () => reject(new Error("No se pudo leer el archivo"));
+      reader.readAsDataURL(file);
+    });
+  }
+
+  function estimateKBFromBase64(base64) {
+    return Math.round(((base64.length * 3) / 4) / 1024);
+  }
+
+  async function handlePhotoSelected(file) {
     if (!file) return;
-    const reader = new FileReader();
-    reader.onload = () => {
-      const dataUrl = reader.result;
-      foodModal.photoBase64 = String(dataUrl).split(",")[1] || null;
+    $("photo-placeholder-text").textContent = "Comprimiendo imagen…";
+    $("photo-placeholder-icon").classList.remove("hidden");
+    $("photo-placeholder-text").classList.remove("hidden");
+    $("photo-preview").classList.add("hidden");
+    $("photo-size-info").classList.add("hidden");
+
+    try {
+      // Máx. 1024px en el lado más largo, calidad JPEG 72% — de sobra
+      // para que un modelo de visión reconozca ingredientes y porciones.
+      const dataUrl = await compressImage(file, 1024, 0.72);
+      const base64 = String(dataUrl).split(",")[1] || null;
+      foodModal.photoBase64 = base64;
+
       $("photo-preview").src = dataUrl;
       $("photo-preview").classList.remove("hidden");
       $("photo-placeholder-icon").classList.add("hidden");
       $("photo-placeholder-text").classList.add("hidden");
       $("photo-analyze-btn").disabled = false;
-    };
-    reader.readAsDataURL(file);
+
+      const kb = base64 ? estimateKBFromBase64(base64) : 0;
+      $("photo-size-text").textContent = "Imagen lista para analizar (~" + kb + " KB)";
+      $("photo-size-info").classList.remove("hidden");
+      $("photo-size-info").classList.add("flex");
+    } catch (err) {
+      console.warn("No se pudo procesar la imagen:", err);
+      $("photo-placeholder-text").textContent =
+        "No se pudo procesar esa imagen. Intenta con otra foto.";
+      $("photo-placeholder-icon").classList.remove("hidden");
+      $("photo-placeholder-text").classList.remove("hidden");
+      $("photo-analyze-btn").disabled = true;
+    }
   }
 
   async function runPhotoAnalysis() {
@@ -997,21 +1130,42 @@
       shake($("food-save-btn"));
       return;
     }
-    const entry = {
-      tipo: foodModal.mealType,
-      metodo: foodModal.method,
-      descripcion: descripcion,
-      calorias: calorias,
-      proteinas: parseInt($("result-protein-input").value, 10) || 0,
-      carbohidratos: parseInt($("result-carbs-input").value, 10) || 0,
-      grasas: parseInt($("result-fat-input").value, 10) || 0,
-      timestamp: new Date().toISOString(),
-    };
 
     const data = currentData();
     const today = todayKey();
     if (!data.foodLog[today]) data.foodLog[today] = [];
-    data.foodLog[today].push(entry);
+
+    const macros = {
+      proteinas: parseInt($("result-protein-input").value, 10) || 0,
+      carbohidratos: parseInt($("result-carbs-input").value, 10) || 0,
+      grasas: parseInt($("result-fat-input").value, 10) || 0,
+    };
+
+    if (foodModal.editingIndex !== null && data.foodLog[today][foodModal.editingIndex]) {
+      // Edición de un registro existente: se conserva su timestamp original.
+      const existing = data.foodLog[today][foodModal.editingIndex];
+      data.foodLog[today][foodModal.editingIndex] = Object.assign({}, existing, {
+        tipo: foodModal.mealType,
+        metodo: foodModal.method,
+        descripcion: descripcion,
+        calorias: calorias,
+        proteinas: macros.proteinas,
+        carbohidratos: macros.carbohidratos,
+        grasas: macros.grasas,
+      });
+    } else {
+      data.foodLog[today].push({
+        tipo: foodModal.mealType,
+        metodo: foodModal.method,
+        descripcion: descripcion,
+        calorias: calorias,
+        proteinas: macros.proteinas,
+        carbohidratos: macros.carbohidratos,
+        grasas: macros.grasas,
+        timestamp: new Date().toISOString(),
+      });
+    }
+
     saveState();
     renderFoodLog();
     closeFoodModal();
@@ -1221,6 +1375,7 @@
     $("add-food-manual").addEventListener("click", () => openFoodModal("lista"));
     $("add-food-photo").addEventListener("click", () => openFoodModal("foto"));
     $("switch-profile").addEventListener("click", switchProfile);
+    $("food-log").addEventListener("click", handleFoodLogClick);
 
     // Modal de registro de comida
     $("food-modal-close").addEventListener("click", closeFoodModal);

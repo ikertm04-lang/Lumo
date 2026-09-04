@@ -555,7 +555,7 @@ tailwind.config = { darkMode: 'class', theme: { extend: {
     <!-- Header -->
     <div class="flex items-center justify-between px-space-md pt-space-md pb-space-sm shrink-0">
       <div class="flex flex-col">
-        <span class="font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">Registrar comida</span>
+        <span class="font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant" id="food-modal-mode-label">Registrar comida</span>
         <h2 class="font-headline-sm text-headline-sm text-on-surface" id="food-modal-title">Desayuno</h2>
       </div>
       <button class="w-9 h-9 rounded-full bg-surface-container flex items-center justify-center text-on-surface-variant" id="food-modal-close" type="button" aria-label="Cerrar">
@@ -592,6 +592,9 @@ tailwind.config = { darkMode: 'class', theme: { extend: {
           <p class="font-body-sm text-body-sm text-on-surface-variant text-center px-space-md" id="photo-placeholder-text">Toma o sube una foto de tu platillo</p>
         </div>
         <input type="file" accept="image/*" capture="environment" id="photo-input" class="hidden" />
+        <p class="hidden font-label-md text-label-md text-tertiary text-center items-center justify-center gap-1" id="photo-size-info">
+          <span class="material-symbols-outlined text-[16px]">check_circle</span><span id="photo-size-text"></span>
+        </p>
         <button class="w-full h-11 rounded-full bg-surface-container text-on-surface font-label-lg text-label-lg flex items-center justify-center gap-1.5" id="photo-pick-btn" type="button">
           <span class="material-symbols-outlined text-[18px]">upload</span><span>Elegir foto</span>
         </button>
@@ -649,7 +652,7 @@ tailwind.config = { darkMode: 'class', theme: { extend: {
         </div>
         <p class="font-body-sm text-body-sm text-on-surface-variant" id="food-result-note"></p>
         <button class="w-full h-12 rounded-full bg-tertiary text-on-tertiary font-label-lg text-label-lg flex items-center justify-center gap-1.5 shadow-sm" id="food-save-btn" type="button">
-          <span class="material-symbols-outlined text-[18px]">check_circle</span><span>Guardar registro</span>
+          <span class="material-symbols-outlined text-[18px]">check_circle</span><span id="food-save-label">Guardar registro</span>
         </button>
       </div>
 
