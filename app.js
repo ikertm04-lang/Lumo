@@ -1,14 +1,3 @@
-/* ============================================================
-   LUMO — app.js
-   Lógica completa de onboarding, dashboard, ejercicio y perfil.
-   Incluye el tope de déficit calórico seguro (CDC/OMS/NHS/AHA):
-     - Ritmo saludable: 0.5–1 kg/semana
-     - Déficit máximo permitido: 750–1000 kcal/día o 1% del peso
-       corporal por semana (lo que sea menor)
-     - Piso de calorías mínimas por sexo para nunca bajar de un
-       consumo inseguro
-   ============================================================ */
-
 (function () {
   "use strict";
 
@@ -23,7 +12,7 @@
     elena:
       "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyMDAgMjAwIiB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCI+CiAgPGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMCwgNSkiPgogICAgPGVsbGlwc2UgY3g9IjEwMCIgY3k9IjE4MCIgcng9IjY1IiByeT0iMTIiIGZpbGw9IiNGMUQ3REYiIC8+CiAgICA8cGF0aCBkPSJNNTIgMTQ1IEMzNSAxMjUgMzUgNzUgNjAgNDUgQzgyIDIwIDEyMCAyMCAxNDIgNDUgQzE2NSA3MiAxNjUgMTI1IDE0OCAxNDUgQzEzMiAxNjYgNjggMTY2IDUyIDE0NSBaIiBmaWxsPSIjRDQ1MzdFIiAvPgogICAgPHBhdGggZD0iTTY4IDEzNSBDNTggMTE1IDYyIDgwIDgwIDYwIEM5MiA0OCAxMTAgNDggMTIyIDYwIEMxMzUgNzUgMTQwIDExNSAxMzIgMTM1IEMxMjIgMTUyIDc4IDE1MiA2OCAxMzUgWiIgZmlsbD0iI0RFNjg4RiIgb3BhY2l0eT0iMC40IiAvPgogICAgPGNpcmNsZSBjeD0iNjgiIGN5PSI5OCIgcj0iMTAiIGZpbGw9IiNGNDk1QjIiIG9wYWNpdHk9IjAuOCIgLz4KICAgIDxjaXJjbGUgY3g9IjEzMiIgY3k9Ijk4IiByPSIxMCIgZmlsbD0iI0Y0OTVCMiIgb3BhY2l0eT0iMC44IiAvPgogICAgPGNpcmNsZSBjeD0iODIiIGN5PSI4NSIgcj0iNyIgZmlsbD0iIzFGMTUxOCIgLz4KICAgIDxjaXJjbGUgY3g9IjExOCIgY3k9Ijg1IiByPSI3IiBmaWxsPSIjMUYxNTE4IiAvPgogICAgPGNpcmNsZSBjeD0iODAiIGN5PSI4MiIgcj0iMi41IiBmaWxsPSIjRkZGRkZGIiAvPgogICAgPGNpcmNsZSBjeD0iMTE2IiBjeT0iODIiIHI9IjIuNSIgZmlsbD0iI0ZGRkZGRiIgLz4KICAgIDxwYXRoIGQ9Ik05MiA5OCBRMTAwIDEwNiAxMDggOTgiIHN0cm9rZT0iIzFGMTUxOCIgc3Ryb2tlLXdpZHRoPSIzLjUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgZmlsbD0ibm9uZSIgLz4KICAgIDxjaXJjbGUgY3g9IjEwMCIgY3k9IjIyIiByPSI1IiBmaWxsPSIjRUY5RjI3IiAvPgogICAgPHBhdGggZD0iTTEwMCAyNyBRMTAwIDM0IDEwMCAzOCIgc3Ryb2tlPSIjRUY5RjI3IiBzdHJva2Utd2lkdGg9IjMiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgZmlsbD0ibm9uZSIgLz4KICA8L2c+Cjwvc3ZnPgo=",
     lucas:
-      "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyMDAgMjAwIiB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCI+CiAgPGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMCwgNSkiPgogICAgPGVsbGlwc2UgY3g9IjEwMCIgY3k9IjE4MCIgcng9IjY1IiByeT0iMTIiIGZpbGw9IiNEM0U0RjQiIC8+CiAgICA8cGF0aCBkPSJNNTUgOTAgQzM1IDEyNSA0MCAxNjAgMzAgMTcwIEM1NSAxNjUgNzUgMTYwIDg1IDE1NSBaIiBmaWxsPSIjRUY5RjI3IiAvPgogICAgPHBhdGggZD0iTTE0NSA5MCBDMTY1IDEyNSAxNjAgMTYwIDE3MCAxNzAgQzE0NSAxNjUgMTI1IDE2MCAxMTUgMTU1IFoiIGZpbGw9IiNEOThBMTkiIC8+CiAgICA8cGF0aCBkPSJNNTIgMTQ1IEMzNSAxMjIgMzYgNzAgNjIgNDIgQzg0IDE4IDExOCAxOCAxNDAgNDIgQzE2NCA3MCAxNjUgMTIyIDE0OCAxNDUgQzEzMiAxNjYgNjggMTY2IDUyIDE0NSBaIiBmaWxsPSIjMzc4QUREIiAvPgogICAgPHBhdGggZD0iTTY4IDEzNSBDNTggMTE1IDYyIDgwIDgwIDYwIEM5MiA0OCAxMTAgNDggMTIyIDYwIEMxMzUgNzUgMTQwIDExNSAxMzIgMTM1IEMxMjIgMTUyIDc4IDE1MiA2OCAxMzUgWiIgZmlsbD0iIzU4OUZFNSIgb3BhY2l0eT0iMC40IiAvPgogICAgPHBhdGggZD0iTTY0IDc2IEM3NiA3MCA5MiA3NCAxMDAgODAgQzEwOCA3NCAxMjQgNzAgMTM2IDc2IEMxNDQgODAgMTQ0IDk0IDEzNSA5NiBDMTI0IDk4IDEwOCA5MiAxMDAgODUgQzkyIDkyIDc2IDk4IDY1IDk2IEM1NiA5NCA1NiA4MCA2NCA3NiBaIiBmaWxsPSIjMUM0RjgyIiAvPgogICAgPGNpcmNsZSBjeD0iODIiIGN5PSI4NSIgcj0iNiIgZmlsbD0iI0ZGRkZGRiIgLz4KICAgIDxjaXJjbGUgY3g9IjExOCIgY3k9Ijg1IiByPSI2IiBmaWxsPSIjRkZGRkZGIiAvPgogICAgPGNpcmNsZSBjeD0iODMiIGN5PSI4NSIgcj0iMy41IiBmaWxsPSIjMEUyODQ0IiAvPgogICAgPGNpcmNsZSBjeD0iMTE5IiBjeT0iODUiIHI9IjMuNSIgZmlsbD0iIzBFMjg0NCIgLz4KICAgIDxjaXJjbGUgY3g9Ijg0IiBjeT0iODMiIHI9IjEuNSIgZmlsbD0iI0ZGRkZGRiIgLz4KICAgIDxjaXJjbGUgY3g9IjEyMCIgY3k9IjgzIiByPSIxLjUiIGZpbGw9IiNGRkZGRkYiIC8+CiAgICA8cGF0aCBkPSJNOTQgMTAyIFExMDIgMTA4IDExMCAxMDIiIHN0cm9rZT0iIzBFMjg0NCIgc3Ryb2tlLXdpZHRoPSIzIiBzdHJva2UtbGluZWNhcD0icm91bmQiIGZpbGw9Im5vbmUiIC8+CiAgPC9nPgo8L3N2Zz4K",
+      "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyMDAgMjAwIiB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCI+CiAgPGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMCwgNSkiPgogICAgPGVsbGlwc2UgY3g9IjEwMCIgY3k9IjE4MCIgcng9IjY1IiByeT0iMTIiIGZpbGw9IiNEM0U0RjQiIC8+CiAgICA8cGF0aCBkPSJNNTUgOTAgQzM1IDEyNSA0MCAxNjAgMzAgMTcwIEM1NSAxNjUgNzUgMTYwIDg1IDE1NSBaIiBmaWxsPSIjRUY5RjI3IiAvPgogICAgPHBhdGggZD0iTTE0NSA5MCBDMTY1IDEyNSAxNjAgMTYwIDE3MCAxNzAgQzE0NSAxNjUgMTI1IDE2MCAxMTUgMTU1IFoiIGZpbGw9IiNEOThBMTkiIC8+CiAgICA8cGF0aCBkPSJNNTIgMTQ1IEMzNSAxMjIgMzYgNzAgNjIgNDIgQzg0IDE4IDExOCAxOCAxNDAgNDIgQzE2NCA3MCAxNjUgMTIyIDE0OCAxNDUgQzEzMiAxNjYgNjggMTY2IDUyIDE0NSBaIiBmaWxsPSIjMzc4QUREIiAvPgogICAgPHBhdGggZD0iTTY4IDEzNSBDNTggMTE1IDYyIDgwIDgwIDYwIEM5MiA0OCAxMTAgNDggMTIyIDYwIEMxMzUgNzUgMTQwIDExNSAxMzIgMTM1IEMxMjIgMTUyIDc4IDE1MiA2OCAxMzUgWiIgZmlsbD0iIzU4OUZFNSIgb3BhY2l0eT0iMC40IiAvPgogICAgPHBhdGggZD0iTTY0IDc2IEM3NiA3MCA5MiA3NCAxMDAgODAgQzEwOCA3NCAxMjQgNzAgMTM2IDc2IEMxNDQgODAgMTQ0IDk0IDEzNSA5NiBDMTI0IDk4IDEwOCA5MiAxMDAgODUgQzkyIDkyIDc2IDk4IDY1IDk2IEM1NiA5NCA1NiA4MCA2NCA3NiBaIiBmaWxsPSIjMUM0RjgyIiAvPgogICAgPGNpcmNsZSBjeD0iODIiIGN5PSI4NSIgcj0iNiIgZmlsbD0iI0ZGRkZGRiIgLz4KICAgIDxjaXJjbGUgY3g9IjExOCIgY3k9Ijg1IiByPSI2IiBmaWxsPSIjRkZGRkZGIiAvPgogICAgPGNpcmNsZSBjeD0iODMiIGN5PSI4NSIgcj0iMy41IiBmaWxsPSIjMEUyODQ0IiAvPgogICAgPGNpcmNsZSBjeD0iMTE5IiBjeT0iODUiIHI9IjMuNSIgZmlsbD0iIzBFMjg0NCIgLz4KICAgIDxjaXJjbGUgY3g9Ijg0IiBjeT0iODMiIHI9EuNSIgZmlsbD0iI0ZGRkZGRiIgLz4KICAgIDxjaXJjbGUgY3g9IjEyMCIgY3k9IjgzIiByPSIxLjUiIGZpbGw9IiNGRkZGRkYiIC8+CiAgICA8cGF0aCBkPSJNOTQgMTAyIFExMDIgMTA4IDExMCAxMDIiIHN0cm9rZT0iIzBFMjg0NCIgc3Ryb2tlLXdpZHRoPSIzIiBzdHJva2UtbGluZWNhcD0icm91bmQiIGZpbGw9Im5vbmUiIC8+CiAgPC9nPgo8L3N2Zz4K",
   };
 
   function setMascot(id, key) {
@@ -33,10 +22,6 @@
 
   /* ============================================================
      FIREBASE — sincronización "Dúo Lumo" entre los dos celulares
-     Cada perfil (elena/lucas) es un documento en la colección
-     "profiles". localStorage sigue siendo la caché instantánea y
-     offline; Firestore es la fuente compartida entre los dos
-     teléfonos. Se usa Auth anónimo (dos personas, sin login real).
      ============================================================ */
 
   const firebaseConfig = {
@@ -69,11 +54,7 @@
     try {
       firebase.initializeApp(firebaseConfig);
       db = firebase.firestore();
-      // Permite seguir funcionando offline y sincronizar al recuperar señal
-      db.enablePersistence({ synchronizeTabs: true }).catch(() => {
-        // Falla en modo privado / varias pestañas sin sync — la app sigue
-        // funcionando, solo sin caché offline de Firestore.
-      });
+      db.enablePersistence({ synchronizeTabs: true }).catch(() => {});
 
       firebase
         .auth()
@@ -94,10 +75,6 @@
     }
   }
 
-  // Escucha en tiempo real los cambios del documento de cada perfil.
-  // Si el cambio viene de una escritura propia (hasPendingWrites), se
-  // ignora para no procesar el eco de lo que este mismo dispositivo
-  // acaba de mandar.
   function listenProfile(key) {
     if (!db) return;
     db.collection("profiles")
@@ -105,7 +82,7 @@
       .onSnapshot(
         (snap) => {
           if (!snap.exists) return;
-          if (snap.metadata.hasPendingWrites) return; // eco de nuestra propia escritura
+          if (snap.metadata.hasPendingWrites) return; 
           const cloudData = snap.data();
           delete cloudData.updatedAt;
           state.profiles[key] = cloudData;
@@ -124,8 +101,6 @@
       );
   }
 
-  // Sube el perfil activo a Firestore. Se llama automáticamente cada
-  // vez que se guarda estado local (checkin, comida, peso, Strava...).
   function pushProfileToCloud(key) {
     if (!db || !cloudReady || !state.profiles[key]) return;
     const payload = Object.assign({}, state.profiles[key], {
@@ -161,9 +136,6 @@
      NUTRICIÓN — momento del día, base de alimentos e IA
      ============================================================ */
 
-  // Detecta el momento del día según la hora local del dispositivo.
-  //   06:00–11:59 → desayuno | 12:00–16:59 → comida
-  //   17:00–20:59 → cena     | 21:00–05:59 → snack
   function getMealTypeByHour(date) {
     const h = (date || new Date()).getHours();
     if (h >= 6 && h < 12) return "desayuno";
@@ -179,9 +151,6 @@
     snack: "Snack",
   };
 
-  // Base de alimentos comunes con calorías/macros precalculados por porción.
-  // (valores de referencia aproximados, pensados para selección rápida —
-  // Opción B del registro de comidas)
   const FOOD_DATABASE = [
     { name: "Huevo (1 pieza, cocido)", kcal: 78, protein: 6.3, carbs: 0.6, fat: 5.3 },
     { name: "Pan de caja integral (1 rebanada)", kcal: 80, protein: 4, carbs: 14, fat: 1 },
@@ -213,55 +182,27 @@
   ];
 
   /* ------------------------------------------------------------
-     Integración con IA multimodal (foto y texto)
-     ------------------------------------------------------------
-     Conecta aquí la API que elijan (OpenAI Vision, Gemini, etc.).
-     ⚠️ IMPORTANTE: nunca dejes tu apiKey real en este archivo si el
-     sitio se sirve como estático en GitHub Pages — cualquiera puede
-     leer el código fuente y robarla. Lo correcto en producción es
-     llamar a un pequeño backend/proxy propio (p. ej. una Cloud
-     Function) que guarde la key de forma segura y reciba aquí solo
-     la foto/texto. Estos placeholders están listos para conectarse
-     a ese proxy o, temporalmente en desarrollo, a la API directa.
+     Integración con IA multimodal (foto y texto) Vía Backend Vercel
      ------------------------------------------------------------ */
   const AI_CONFIG = {
-    // "openai" | "gemini" | "proxy" (tu propio backend)
     provider: "proxy",
-    apiKey: "TU_API_KEY_AQUI", // <-- coloca aquí tu key (o bórrala si usas "proxy")
-    endpoint: "https://TU-BACKEND-O-PROXY/analizar-comida", // <-- URL de tu proxy o de la API elegida
-    visionModel: "gpt-4o-mini", // ejemplo si usaran OpenAI directo
-    textModel: "gpt-4o-mini",
+    endpoint: "/api/analizar-comida", // Ruta a tu serverless function en Vercel
   };
 
+  // Verifica si el endpoint está configurado (al ser ruta relativa, siempre devolverá true)
   function aiIsConfigured() {
-    return (
-      AI_CONFIG.apiKey &&
-      AI_CONFIG.apiKey !== "TU_API_KEY_AQUI" &&
-      AI_CONFIG.endpoint &&
-      !AI_CONFIG.endpoint.includes("TU-BACKEND")
-    );
+    return !!AI_CONFIG.endpoint;
   }
 
-  // Estima kcal/macros a partir de una foto (base64 sin el prefijo data:).
-  // Placeholder: intenta llamar a AI_CONFIG.endpoint; si no está configurado
-  // (caso por defecto), devuelve una estimación simulada para poder seguir
-  // probando el flujo completo de la UI sin una key real.
   async function analyzeImageWithAI(base64Image) {
-    if (!aiIsConfigured()) {
-      return mockEstimate("foto");
-    }
+    if (!aiIsConfigured()) return mockEstimate("foto");
     try {
       const res = await fetch(AI_CONFIG.endpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           tipo: "foto",
-          modelo: AI_CONFIG.visionModel,
-          imagenBase64: base64Image,
-          instrucciones:
-            "Analiza esta foto de un platillo. Devuelve SOLO un JSON con: " +
-            '{"descripcion": string, "calorias": number, "proteinas": number, "carbohidratos": number, "grasas": number}. ' +
-            "Los valores nutricionales son estimados en gramos (proteínas/carbohidratos/grasas) y kcal totales.",
+          imagenBase64: base64Image
         }),
       });
       if (!res.ok) throw new Error("Respuesta no válida del servicio de IA (" + res.status + ")");
@@ -270,28 +211,21 @@
     } catch (err) {
       console.warn("No se pudo analizar la foto con IA:", err);
       const fallback = mockEstimate("foto");
-      fallback.note =
-        "No se pudo contactar al servicio de IA — mostrando una estimación de ejemplo. Ajusta los valores manualmente.";
+      fallback.note = "Hubo un error al contactar al servicio de IA. Intenta de nuevo más tarde.";
       return fallback;
     }
   }
 
-  // Estima kcal/macros a partir de una descripción de texto libre.
   async function analyzeTextWithAI(texto) {
-    if (!aiIsConfigured()) {
-      return mockEstimate("texto", texto);
-    }
+    if (!aiIsConfigured()) return mockEstimate("texto", texto);
+    
     try {
       const res = await fetch(AI_CONFIG.endpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           tipo: "texto",
-          modelo: AI_CONFIG.textModel,
-          descripcion: texto,
-          instrucciones:
-            "Interpreta esta descripción de una comida y estima su valor nutricional. Devuelve SOLO un JSON con: " +
-            '{"descripcion": string, "calorias": number, "proteinas": number, "carbohidratos": number, "grasas": number}.',
+          descripcion: texto
         }),
       });
       if (!res.ok) throw new Error("Respuesta no válida del servicio de IA (" + res.status + ")");
@@ -300,8 +234,7 @@
     } catch (err) {
       console.warn("No se pudo analizar el texto con IA:", err);
       const fallback = mockEstimate("texto", texto);
-      fallback.note =
-        "No se pudo contactar al servicio de IA — mostrando una estimación de ejemplo. Ajusta los valores manualmente.";
+      fallback.note = "Hubo un error al contactar al servicio de IA. Intenta de nuevo más tarde.";
       return fallback;
     }
   }
@@ -313,13 +246,10 @@
       proteinas: Math.round(Number(data.proteinas) || 0),
       carbohidratos: Math.round(Number(data.carbohidratos) || 0),
       grasas: Math.round(Number(data.grasas) || 0),
-      note: "Estimación generada por IA — puedes ajustarla antes de guardar.",
+      note: "Estimación generada por Gemini AI. Revisa y ajusta antes de guardar.",
     };
   }
 
-  // Estimación simulada (usada mientras no haya una API key/proxy real
-  // configurado en AI_CONFIG) para que el flujo completo de la app se
-  // pueda probar de principio a fin.
   function mockEstimate(metodo, texto) {
     const opciones = [
       { descripcion: "Platillo mixto (estimado)", calorias: 420, proteinas: 22, carbohidratos: 45, grasas: 15 },
@@ -333,21 +263,19 @@
       proteinas: pick.proteinas,
       carbohidratos: pick.carbohidratos,
       grasas: pick.grasas,
-      note:
-        "Estimación DE EJEMPLO (IA no configurada aún — ver AI_CONFIG en app.js). Ajusta los valores antes de guardar.",
+      note: "Estimación DE EJEMPLO (Backend no conectado).",
     };
   }
 
   /* ---------- Estado ---------- */
   let state = loadState() || {
     profiles: {
-      elena: null, // { edad, estatura, peso, sexo, actividad, metaPeso, bmr, tdee, deficit, dailyCal, weightLog:[], foodLog:[{date, items:[]}], streak, lastCheckIn, stravaConnected }
+      elena: null, 
       lucas: null,
     },
     currentProfile: null,
   };
 
-  // Onboarding buffer (datos que se van llenando durante los 5 pasos)
   let ob = {
     profileKey: null,
     edad: null,
@@ -369,17 +297,14 @@
   function saveState() {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-    } catch (e) {
-      console.warn("No se pudo guardar el estado de Lumo:", e);
-    }
+    } catch (e) {}
     if (state.currentProfile) pushProfileToCloud(state.currentProfile);
   }
 
   /* ============================================================
-     CÁLCULOS DE SALUD — Mifflin-St Jeor + tope de déficit seguro
+     CÁLCULOS DE SALUD
      ============================================================ */
 
-  // BMR (Mifflin-St Jeor)
   function calcBMR(sexo, pesoKg, estaturaCm, edad) {
     const base = 10 * pesoKg + 6.25 * estaturaCm - 5 * edad;
     return sexo === "male" ? base + 5 : base - 161;
@@ -397,39 +322,24 @@
     return "Obesidad";
   }
 
-  /**
-   * Calcula el déficit calórico diario SEGURO, respetando:
-   *  - Tope duro: 1000 kcal/día
-   *  - Tope relativo: 1% del peso corporal por semana
-   *    (1 kg de grasa ≈ 7700 kcal → 1% peso/semana en kcal/día)
-   *  - Piso mínimo de calorías diarias por sexo (nunca se cruza,
-   *    aunque eso signifique reducir el déficit solicitado)
-   */
   function calcSafeDeficit(pesoKg, tdee, sexo, ritmoDeseadoKgSemana) {
     const KCAL_POR_KG_GRASA = 7700;
     const TOPE_DURO_DIA = 1000;
-    const TOPE_MIN_DIA = 0; // nunca superávit forzado
+    const TOPE_MIN_DIA = 0; 
     const FLOOR_CAL = sexo === "male" ? 1500 : 1200;
 
-    // Tope por 1% del peso corporal a la semana
     const topePorPeso = (pesoKg * 0.01 * KCAL_POR_KG_GRASA) / 7;
-
-    // Déficit deseado según el ritmo que pidió el usuario (o 0.75 kg/sem por defecto)
     const ritmo = ritmoDeseadoKgSemana || 0.75;
     const deficitDeseado = (ritmo * KCAL_POR_KG_GRASA) / 7;
 
-    // Aplicar el tope MÁS ESTRICTO de los dos (nunca dejar que el usuario
-    // elija un ritmo más agresivo, sin importar qué tan motivado esté)
     let deficit = Math.min(deficitDeseado, TOPE_DURO_DIA, topePorPeso);
     deficit = Math.max(deficit, TOPE_MIN_DIA);
 
-    // Verificar el piso de calorías mínimas: si el déficit deja el consumo
-    // diario por debajo del piso seguro, se recorta el déficit (nunca el piso)
     let dailyCal = tdee - deficit;
     if (dailyCal < FLOOR_CAL) {
       dailyCal = FLOOR_CAL;
       deficit = tdee - dailyCal;
-      if (deficit < 0) deficit = 0; // por si el TDEE ya es muy bajo
+      if (deficit < 0) deficit = 0; 
     }
 
     return {
@@ -456,12 +366,8 @@
      UTILIDADES DE UI
      ============================================================ */
 
-  function $(id) {
-    return document.getElementById(id);
-  }
-  function $$(sel, ctx) {
-    return Array.from((ctx || document).querySelectorAll(sel));
-  }
+  function $(id) { return document.getElementById(id); }
+  function $$(sel, ctx) { return Array.from((ctx || document).querySelectorAll(sel)); }
 
   function showScreen(id) {
     $$(".screen").forEach((s) => s.classList.remove("active"));
@@ -505,7 +411,6 @@
     ob.profileKey = key;
     ["elena", "lucas"].forEach((k) => {
       const selected = k === key;
-      // Liss (elena) usa el tema rosa (primary); Iker (lucas) usa el tema azul (secondary)
       const colorBg = k === "elena" ? "bg-primary" : "bg-secondary";
       const colorText = k === "elena" ? "text-on-primary" : "text-on-secondary";
 
@@ -551,7 +456,7 @@
     ob.edad = edad;
     ob.estatura = estatura;
     ob.peso = peso;
-    ob.metaPeso = Math.round((peso - 5) * 2) / 2; // sugerencia inicial: -5kg
+    ob.metaPeso = Math.round((peso - 5) * 2) / 2;
 
     enterStep3();
   }
@@ -587,16 +492,13 @@
     const diff = ob.metaPeso - ob.peso;
     if (Math.abs(diff) < 0.05) {
       $("diff-text").textContent = "Mantener peso actual";
-      $("mascot-speech").textContent =
-        "Mantener tu peso también es una meta válida. Vamos a enfocarnos en energía y hábitos.";
+      $("mascot-speech").textContent = "Mantener tu peso también es una meta válida. Vamos a enfocarnos en energía y hábitos.";
     } else if (diff < 0) {
       $("diff-text").textContent = fmt(diff, 1) + " kg";
-      $("mascot-speech").textContent =
-        "Iremos a tu propio ritmo, sin prisas ni restricciones extremas. Cada semana cuenta.";
+      $("mascot-speech").textContent = "Iremos a tu propio ritmo, sin prisas ni restricciones extremas. Cada semana cuenta.";
     } else {
       $("diff-text").textContent = "+" + fmt(diff, 1) + " kg";
-      $("mascot-speech").textContent =
-        "Ganar peso de forma saludable también se planea con calma. Vamos paso a paso.";
+      $("mascot-speech").textContent = "Ganar peso de forma saludable también se planea con calma. Vamos paso a paso.";
     }
   }
 
@@ -627,7 +529,7 @@
   }
 
   /* ============================================================
-     PASO 5 — Resumen del plan (aquí se aplica el tope de déficit)
+     PASO 5 — Resumen del plan
      ============================================================ */
 
   function enterStep5() {
@@ -646,9 +548,7 @@
     $("ob5-deficit").textContent = ob.metaPeso < ob.peso ? deficit : 0;
     $("ob5-weeks").textContent = ob.metaPeso < ob.peso ? weeks : "—";
 
-    // Guardar todo para cuando se pulse "Ir a mi dashboard"
     ob._computed = { bmr, tdee, bmi, deficit, dailyCal, capped, weeks };
-
     showObStep(5);
   }
 
@@ -668,8 +568,6 @@
       deficit: c.deficit,
       dailyCal: c.dailyCal,
       weightLog: [{ date: todayKey(), peso: ob.peso }],
-      // { "YYYY-MM-DD": [{ tipo, metodo, descripcion, calorias, proteinas,
-      //                     carbohidratos, grasas, timestamp }] }
       foodLog: {},
       streak: 0,
       lastCheckIn: null,
@@ -728,7 +626,6 @@
     $("streakIcon").textContent = checkedToday ? "check_circle" : "done";
     $("check-in-btn").classList.toggle("opacity-60", checkedToday);
 
-    // Progreso hacia la meta
     const totalDist = Math.abs(data.pesoInicial - data.metaPeso) || 1;
     const avanzado = Math.abs(data.pesoInicial - data.peso);
     const pct = Math.min(100, Math.round((avanzado / totalDist) * 100));
@@ -741,9 +638,6 @@
     $("stat-current-weight").textContent = fmt(data.peso, 1) + " kg";
     $("stat-lost").textContent = fmt(Math.abs(data.pesoInicial - data.peso), 1) + " kg";
 
-    // Comparativa de pareja (Dúo Lumo) — slot A siempre Liss (mascota rosa fija
-    // en el HTML), slot B siempre Iker (mascota azul fija), para que coincidan
-    // con las imágenes ya incrustadas en esa sección
     const lissData = state.profiles.elena;
     const ikerData = state.profiles.lucas;
     $("vs-name-a").textContent = PROFILE_META.elena.name;
@@ -786,30 +680,29 @@
       list.appendChild(li);
     } else {
       items.forEach((item, idx) => {
-        // Compatibilidad con registros antiguos (formato { name, kcal })
         const desc = item.descripcion ?? item.name ?? "Comida";
         const kcal = item.calorias ?? item.kcal ?? 0;
         const tipo = item.tipo || "snack";
         const icon = MEAL_TYPE_ICONS[tipo] || "restaurant";
         const li = document.createElement("li");
-        li.className =
-          "flex items-center gap-space-xs bg-surface-container-low rounded-DEFAULT px-3 py-2";
+        
+        li.className = "flex items-center justify-between gap-space-xs bg-surface-container-low rounded-DEFAULT px-3 py-2";
         li.innerHTML =
-          '<span class="material-symbols-outlined text-[18px] text-on-surface-variant shrink-0">' +
-          icon +
-          '</span><span class="font-body-sm text-body-sm text-on-surface flex-1 truncate">' +
-          escapeHtml(desc) +
-          '</span><span class="font-label-md text-label-md text-on-surface-variant shrink-0">' +
-          Math.round(kcal) +
-          '</span>' +
-          '<div class="flex items-center gap-0.5 shrink-0">' +
-          '<button type="button" class="w-7 h-7 rounded-full flex items-center justify-center text-on-surface-variant" data-action="edit" data-index="' +
-          idx +
-          '" aria-label="Editar"><span class="material-symbols-outlined text-[16px]">edit</span></button>' +
-          '<button type="button" class="w-7 h-7 rounded-full flex items-center justify-center text-on-surface-variant" data-action="delete" data-index="' +
-          idx +
-          '" aria-label="Eliminar"><span class="material-symbols-outlined text-[16px]">delete</span></button>' +
-          "</div>";
+          '<div class="flex items-center gap-space-xs flex-1 min-w-0">' +
+            '<span class="material-symbols-outlined text-[20px] text-on-surface-variant shrink-0">' + icon + '</span>' +
+            '<span class="font-body-sm text-body-sm text-on-surface truncate">' + escapeHtml(desc) + '</span>' +
+          '</div>' +
+          '<div class="flex items-center gap-2 shrink-0">' +
+            '<span class="font-label-md text-label-md text-on-surface-variant shrink-0">' + Math.round(kcal) + '</span>' +
+            '<div class="flex items-center gap-1 shrink-0 ml-1">' +
+              '<button type="button" class="w-9 h-9 rounded-full bg-surface-container-highest flex items-center justify-center text-on-surface-variant shadow-sm active:scale-95 transition-transform" data-action="edit" data-index="' + idx + '" aria-label="Editar">' +
+                '<span class="material-symbols-outlined text-[20px] pointer-events-none">edit</span>' +
+              '</button>' +
+              '<button type="button" class="w-9 h-9 rounded-full bg-surface-container-highest flex items-center justify-center text-on-surface-variant shadow-sm active:scale-95 transition-transform" data-action="delete" data-index="' + idx + '" aria-label="Eliminar">' +
+                '<span class="material-symbols-outlined text-[20px] pointer-events-none">delete</span>' +
+              '</button>' +
+            '</div>' +
+          '</div>';
         list.appendChild(li);
       });
     }
@@ -850,9 +743,9 @@
   let foodModal = {
     mealType: "desayuno",
     method: "lista",
-    photoBase64: null, // sin el prefijo data:...;base64,
-    draft: null, // { descripcion, calorias, proteinas, carbohidratos, grasas }
-    editingIndex: null, // índice dentro de foodLog[today] si se está editando, o null si es nuevo
+    photoBase64: null,
+    draft: null, 
+    editingIndex: null,
   };
 
   function openFoodModal(defaultMethod) {
@@ -877,11 +770,10 @@
     $("food-modal-backdrop").classList.remove("hidden");
   }
 
-  // Abre el modal directamente sobre la tarjeta de resultado, con los
-  // datos de un registro ya existente cargados para poder ajustarlos.
   function openFoodModalForEdit(index) {
     const data = currentData();
-    const items = data.foodLog[todayKey()] || [];
+    const today = todayKey(); 
+    const items = data.foodLog[today] || [];
     const item = items[index];
     if (!item) return;
 
@@ -954,11 +846,6 @@
     $("photo-size-info").classList.remove("flex");
   }
 
-  // Redimensiona y comprime la imagen en el navegador (canvas) antes de
-  // convertirla a base64. Esto evita mandar fotos de varios MB (las que
-  // salen directo de la cámara del celular) a la API de IA — son más
-  // lentas de subir, cuestan más tokens/cuota, y no aportan mejor
-  // estimación que una versión más chica.
   function compressImage(file, maxDim, quality) {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
@@ -1001,8 +888,6 @@
     $("photo-size-info").classList.add("hidden");
 
     try {
-      // Máx. 1024px en el lado más largo, calidad JPEG 72% — de sobra
-      // para que un modelo de visión reconozca ingredientes y porciones.
       const dataUrl = await compressImage(file, 1024, 0.72);
       const base64 = String(dataUrl).split(",")[1] || null;
       foodModal.photoBase64 = base64;
@@ -1142,7 +1027,6 @@
     };
 
     if (foodModal.editingIndex !== null && data.foodLog[today][foodModal.editingIndex]) {
-      // Edición de un registro existente: se conserva su timestamp original.
       const existing = data.foodLog[today][foodModal.editingIndex];
       data.foodLog[today][foodModal.editingIndex] = Object.assign({}, existing, {
         tipo: foodModal.mealType,
@@ -1174,7 +1058,7 @@
   function toggleCheckIn() {
     const data = currentData();
     const today = todayKey();
-    if (data.lastCheckIn === today) return; // ya marcado
+    if (data.lastCheckIn === today) return; 
     data.streak += 1;
     data.lastCheckIn = today;
     saveState();
@@ -1276,7 +1160,6 @@
     data.peso = pesoDraft;
     data.weightLog.push({ date: todayKey(), peso: pesoDraft });
 
-    // Recalcular TDEE / déficit / meta calórica con el nuevo peso
     const meta = PROFILE_META[state.currentProfile];
     const tdee = calcBMR(meta.sex, data.peso, data.estatura, data.edad) * data.actividad;
     const { deficit, dailyCal } = calcSafeDeficit(data.peso, tdee, meta.sex, 0.75);
@@ -1309,15 +1192,12 @@
     }
   }
 
-  /* ---------- Cambiar de perfil ---------- */
-
   function switchProfile() {
     const other = state.currentProfile === "elena" ? "lucas" : "elena";
     if (state.profiles[other]) {
       pesoDraft = null;
       enterApp(other);
     } else {
-      // El otro perfil no tiene onboarding hecho: lo mandamos a crearlo
       ob = { profileKey: null, edad: null, estatura: null, peso: null, metaPeso: null, actividad: null };
       showScreen("screen-onboarding");
       showObStep(1);
@@ -1330,7 +1210,6 @@
      ============================================================ */
 
   function init() {
-    // Paso 1
     $("profile-card-elena").addEventListener("click", () => selectOnboardingProfile("elena"));
     $("profile-card-lucas").addEventListener("click", () => selectOnboardingProfile("lucas"));
     $("submit-profile-btn").addEventListener("click", () => {
@@ -1338,15 +1217,11 @@
       enterStep2();
     });
 
-    // Paso 2
     $("submit-datos-btn").addEventListener("click", submitDatos);
-
-    // Paso 3
     $("btn-decrease").addEventListener("click", () => adjustTarget(-0.5));
     $("btn-increase").addEventListener("click", () => adjustTarget(0.5));
     $("submit-meta-btn").addEventListener("click", () => showObStep(4));
 
-    // Paso 4
     $$(".activity-card").forEach((card) => {
       card.addEventListener("click", () => selectActivity(card));
     });
@@ -1355,29 +1230,24 @@
       enterStep5();
     });
 
-    // Paso 5
     $("finish-onboarding").addEventListener("click", finishOnboarding);
 
-    // Botones "Atrás"
     $$(".back-btn").forEach((btn) => {
       btn.addEventListener("click", () => {
         showObStep(btn.getAttribute("data-back"));
       });
     });
 
-    // Tabbar
     $$(".tab-btn").forEach((btn) => {
       btn.addEventListener("click", () => showView(btn.getAttribute("data-view")));
     });
 
-    // Home
     $("check-in-btn").addEventListener("click", toggleCheckIn);
     $("add-food-manual").addEventListener("click", () => openFoodModal("lista"));
     $("add-food-photo").addEventListener("click", () => openFoodModal("foto"));
     $("switch-profile").addEventListener("click", switchProfile);
     $("food-log").addEventListener("click", handleFoodLogClick);
 
-    // Modal de registro de comida
     $("food-modal-close").addEventListener("click", closeFoodModal);
     $("food-modal-backdrop").addEventListener("click", (e) => {
       if (e.target === $("food-modal-backdrop")) closeFoodModal();
@@ -1388,40 +1258,34 @@
     $$(".food-method-btn").forEach((btn) => {
       btn.addEventListener("click", () => selectFoodMethod(btn.getAttribute("data-method")));
     });
-    // Opción A: Foto + IA
+
     $("photo-dropzone").addEventListener("click", () => $("photo-input").click());
     $("photo-pick-btn").addEventListener("click", () => $("photo-input").click());
     $("photo-input").addEventListener("change", (e) => handlePhotoSelected(e.target.files[0]));
     $("photo-analyze-btn").addEventListener("click", runPhotoAnalysis);
-    // Opción B: Lista / base de alimentos
+    
     $("food-search-input").addEventListener("input", (e) => renderFoodListResults(e.target.value));
-    // Opción C: Descripción en texto
+    
     $("food-text-input").addEventListener("input", (e) => {
       $("text-analyze-btn").disabled = e.target.value.trim().length === 0;
     });
     $("text-analyze-btn").addEventListener("click", runTextAnalysis);
-    // Guardar registro (compartido por las 3 opciones)
+    
     $("food-save-btn").addEventListener("click", saveFoodEntry);
-
-    // Ejercicio
     $("strava-btn").addEventListener("click", toggleStrava);
 
-    // Perfil
     $("btn-minus").addEventListener("click", () => adjustWeightDraft(-0.1));
     $("btn-plus").addEventListener("click", () => adjustWeightDraft(0.1));
     $("save-weight-btn").addEventListener("click", saveWeight);
     $("reset-app").addEventListener("click", resetApp);
 
-    // Quitar el splash del flujo de accesibilidad tras la animación
     setTimeout(() => {
       const splash = $("splash-screen");
       if (splash) splash.style.pointerEvents = "none";
     }, 1400);
 
-    // Conectar con Firebase para la sincronización Dúo Lumo
     initCloud();
 
-    // ¿Ya hay un perfil con onboarding completado? entrar directo a la app
     if (state.currentProfile && state.profiles[state.currentProfile]) {
       $("tabbar").classList.remove("hidden");
       showScreen("screen-app");
@@ -1433,8 +1297,6 @@
     }
   }
 
-  // El script se carga al final del <body>, así que el DOM ya está listo,
-  // pero por seguridad esperamos DOMContentLoaded si aún no disparó.
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", init);
   } else {
