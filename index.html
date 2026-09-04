@@ -440,6 +440,18 @@ tailwind.config = { darkMode: 'class', theme: { extend: {
           <span id="progress-current">Inicio: — kg</span>
           <span class="flex items-center gap-0.5 text-tertiary"><span class="material-symbols-outlined text-[14px]">flag</span><span id="progress-goal">Meta: — kg</span></span>
         </div>
+        <div class="flex items-center gap-2 mt-3 pt-3 border-t border-on-surface/10">
+          <img id="partner-progress-avatar" alt="Mascota de tu pareja" class="w-8 h-8 object-contain shrink-0" src="" />
+          <div class="flex-1 min-w-0">
+            <div class="flex justify-between items-center mb-1">
+              <span class="font-label-md text-label-md text-on-surface-variant truncate" id="partner-progress-name">Tu pareja</span>
+              <span class="font-label-md text-label-md text-primary shrink-0" id="partner-progress-pct">Sin datos</span>
+            </div>
+            <div class="w-full h-2.5 bg-surface-container-high rounded-full overflow-hidden shadow-inner">
+              <div class="h-full bg-secondary rounded-full transition-all duration-500" id="partner-progress-fill" style="width: 0%;"></div>
+            </div>
+          </div>
+        </div>
       </div>
       <div class="grid grid-cols-2 gap-space-sm pt-space-xs">
         <div class="bg-surface-container-low p-space-sm rounded-DEFAULT flex flex-col"><span class="font-body-sm text-body-sm text-on-surface-variant">Peso actual</span><span class="font-headline-sm text-headline-sm text-on-surface mt-0.5" id="stat-current-weight">— kg</span></div>

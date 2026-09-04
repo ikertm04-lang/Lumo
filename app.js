@@ -638,6 +638,8 @@
     $("stat-current-weight").textContent = fmt(data.peso, 1) + " kg";
     $("stat-lost").textContent = fmt(Math.abs(data.pesoInicial - data.peso), 1) + " kg";
 
+    renderPartnerProgress();
+
     const lissData = state.profiles.elena;
     const ikerData = state.profiles.lucas;
     $("vs-name-a").textContent = PROFILE_META.elena.name;
@@ -650,6 +652,30 @@
       : "Sin datos";
 
     renderFoodLog();
+  }
+
+  // Progreso de la pareja en "Camino a la meta": solo % de avance y mascota,
+  // nunca su peso ni su meta (esos campos ni se leen aquí).
+  function renderPartnerProgress() {
+    const otherKey = state.currentProfile === "elena" ? "lucas" : "elena";
+    const partnerMeta = PROFILE_META[otherKey];
+    const partnerData = state.profiles[otherKey];
+
+    $("partner-progress-name").textContent = partnerMeta.name;
+    setMascot("partner-progress-avatar", otherKey);
+
+    if (!partnerData || partnerData.pesoInicial == null || partnerData.metaPeso == null || partnerData.peso == null) {
+      $("partner-progress-pct").textContent = "Sin datos";
+      $("partner-progress-fill").style.width = "0%";
+      return;
+    }
+
+    const totalDist = Math.abs(partnerData.pesoInicial - partnerData.metaPeso) || 1;
+    const avanzado = Math.abs(partnerData.pesoInicial - partnerData.peso);
+    const pct = Math.min(100, Math.round((avanzado / totalDist) * 100));
+
+    $("partner-progress-pct").textContent = pct + "% completado";
+    $("partner-progress-fill").style.width = pct + "%";
   }
 
   const MEAL_TYPE_ICONS = {
