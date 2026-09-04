@@ -4,7 +4,7 @@
 
 export const config = { runtime: "nodejs" };
 
-const MODELO = "gemini-2.0-flash";
+const MODELO = "gemini-3.7-flash";
 
 const INSTRUCCIONES = `Eres un nutriólogo. Analiza la comida y responde EXCLUSIVAMENTE
 con un JSON con esta forma exacta, sin texto adicional, sin markdown, sin backticks:
