@@ -32,6 +32,14 @@
 
   .profile-card-selected { animation: popIn .3s ease; }
 
+  #food-modal-backdrop.active { display: flex; }
+  .meal-type-btn { color:#897176; }
+  .meal-type-btn.active { background:#a52e5a; color:#ffffff; font-weight:600; }
+  .food-method-btn { color:#564146; }
+  .food-method-btn.active { background:#fcf9f4; color:#a52e5a; font-weight:600; box-shadow:0 1px 4px rgba(45,37,34,0.12); }
+  .food-list-item { transition: background-color .15s ease; }
+  .food-list-item:active { background-color:#ebe8e3; }
+
   #splash-screen {
     position:fixed; inset:0; z-index:9999; background:#fcf9f4;
     display:flex; flex-direction:column; align-items:center; justify-content:center; gap:16px;
@@ -539,6 +547,115 @@ tailwind.config = { darkMode: 'class', theme: { extend: {
     <button class="tab-btn flex flex-col items-center justify-center gap-1 min-w-[64px] min-h-[48px] py-1 px-space-xs rounded-full text-on-surface-variant" data-view="perfil"><span class="material-symbols-outlined text-[24px]">face</span><span class="font-label-md text-label-md">Perfil</span></button>
   </div>
 </nav>
+
+<!-- ============ MODAL: REGISTRAR COMIDA ============ -->
+<div id="food-modal-backdrop" class="fixed inset-0 z-[100] hidden items-end justify-center bg-[#1c1c19]/45 backdrop-blur-[1px]">
+  <div class="w-full max-w-[540px] max-h-[88vh] bg-surface rounded-t-[28px] flex flex-col shadow-2xl" id="food-modal" style="animation: fadeUp .25s ease;">
+
+    <!-- Header -->
+    <div class="flex items-center justify-between px-space-md pt-space-md pb-space-sm shrink-0">
+      <div class="flex flex-col">
+        <span class="font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">Registrar comida</span>
+        <h2 class="font-headline-sm text-headline-sm text-on-surface" id="food-modal-title">Desayuno</h2>
+      </div>
+      <button class="w-9 h-9 rounded-full bg-surface-container flex items-center justify-center text-on-surface-variant" id="food-modal-close" type="button" aria-label="Cerrar">
+        <span class="material-symbols-outlined text-[20px]">close</span>
+      </button>
+    </div>
+
+    <!-- Selector de momento del día (auto-sugerido según la hora, editable) -->
+    <div class="px-space-md pb-space-sm shrink-0">
+      <div class="flex items-center gap-1.5 bg-surface-container-low rounded-full p-1" id="meal-type-selector">
+        <button class="meal-type-btn flex-1 h-9 rounded-full font-label-md text-label-md" data-meal="desayuno" type="button">Desayuno</button>
+        <button class="meal-type-btn flex-1 h-9 rounded-full font-label-md text-label-md" data-meal="comida" type="button">Comida</button>
+        <button class="meal-type-btn flex-1 h-9 rounded-full font-label-md text-label-md" data-meal="cena" type="button">Cena</button>
+        <button class="meal-type-btn flex-1 h-9 rounded-full font-label-md text-label-md" data-meal="snack" type="button">Snack</button>
+      </div>
+    </div>
+
+    <!-- Tabs de método -->
+    <div class="px-space-md pb-space-sm shrink-0">
+      <div class="flex items-center gap-1.5 bg-surface-container-high rounded-full p-1" id="food-method-tabs">
+        <button class="food-method-btn flex-1 h-10 rounded-full font-label-md text-label-md flex items-center justify-center gap-1" data-method="foto" type="button"><span class="material-symbols-outlined text-[18px]">photo_camera</span>Foto</button>
+        <button class="food-method-btn flex-1 h-10 rounded-full font-label-md text-label-md flex items-center justify-center gap-1" data-method="lista" type="button"><span class="material-symbols-outlined text-[18px]">list_alt</span>Lista</button>
+        <button class="food-method-btn flex-1 h-10 rounded-full font-label-md text-label-md flex items-center justify-center gap-1" data-method="texto" type="button"><span class="material-symbols-outlined text-[18px]">edit_note</span>Texto</button>
+      </div>
+    </div>
+
+    <div class="flex-1 overflow-y-auto px-space-md pb-space-md flex flex-col gap-space-md">
+
+      <!-- OPCIÓN A: FOTO + IA -->
+      <div class="food-method-panel flex-col gap-space-sm" data-method-panel="foto">
+        <div class="w-full aspect-[4/3] rounded-lg bg-surface-container-low border-2 border-dashed border-outline-variant flex flex-col items-center justify-center gap-space-xs overflow-hidden relative" id="photo-dropzone">
+          <img id="photo-preview" class="hidden absolute inset-0 w-full h-full object-cover" alt="Vista previa del platillo" />
+          <span class="material-symbols-outlined text-[36px] text-on-surface-variant" id="photo-placeholder-icon">add_a_photo</span>
+          <p class="font-body-sm text-body-sm text-on-surface-variant text-center px-space-md" id="photo-placeholder-text">Toma o sube una foto de tu platillo</p>
+        </div>
+        <input type="file" accept="image/*" capture="environment" id="photo-input" class="hidden" />
+        <button class="w-full h-11 rounded-full bg-surface-container text-on-surface font-label-lg text-label-lg flex items-center justify-center gap-1.5" id="photo-pick-btn" type="button">
+          <span class="material-symbols-outlined text-[18px]">upload</span><span>Elegir foto</span>
+        </button>
+        <button class="w-full h-12 rounded-full bg-primary text-on-primary font-label-lg text-label-lg flex items-center justify-center gap-1.5 shadow-sm disabled:opacity-50" id="photo-analyze-btn" type="button" disabled>
+          <span class="material-symbols-outlined text-[18px]">auto_awesome</span><span id="photo-analyze-label">Analizar con IA</span>
+        </button>
+        <p class="font-body-sm text-body-sm text-on-surface-variant leading-relaxed px-1">La IA estima ingredientes, porciones y calorías a partir de la foto. Es una <strong class="text-on-surface font-semibold">aproximación</strong>, no una medición exacta — siempre puedes ajustarla antes de guardar.</p>
+      </div>
+
+      <!-- OPCIÓN B: LISTA / BASE DE ALIMENTOS -->
+      <div class="food-method-panel hidden flex-col gap-space-sm" data-method-panel="lista">
+        <div class="relative">
+          <span class="material-symbols-outlined text-[20px] text-on-surface-variant absolute left-3 top-1/2 -translate-y-1/2">search</span>
+          <input type="text" id="food-search-input" placeholder="Busca un alimento (ej. arroz, pollo, manzana)" class="w-full h-11 rounded-full bg-surface-container-low pl-10 pr-4 font-body-md text-body-md text-on-surface placeholder:text-on-surface-variant outline-none" />
+        </div>
+        <div class="flex flex-col gap-1.5 max-h-[300px] overflow-y-auto" id="food-list-results"></div>
+      </div>
+
+      <!-- OPCIÓN C: DESCRIPCIÓN EN TEXTO -->
+      <div class="food-method-panel hidden flex-col gap-space-sm" data-method-panel="texto">
+        <textarea id="food-text-input" rows="4" placeholder="Escribe lo que comiste, ej: &quot;Dos tacos de pollo con ensalada y un vaso de agua de limón&quot;" class="w-full rounded-xl bg-surface-container-low p-space-sm font-body-md text-body-md text-on-surface placeholder:text-on-surface-variant outline-none resize-none"></textarea>
+        <button class="w-full h-12 rounded-full bg-primary text-on-primary font-label-lg text-label-lg flex items-center justify-center gap-1.5 shadow-sm disabled:opacity-50" id="text-analyze-btn" type="button" disabled>
+          <span class="material-symbols-outlined text-[18px]">auto_awesome</span><span id="text-analyze-label">Estimar con IA</span>
+        </button>
+        <p class="font-body-sm text-body-sm text-on-surface-variant leading-relaxed px-1">La IA interpreta tu descripción y estima el conteo calórico y macronutrientes. Puedes ajustar el resultado antes de guardar.</p>
+      </div>
+
+      <!-- RESULTADO / CONFIRMACIÓN (compartido por las 3 opciones) -->
+      <div class="hidden flex-col gap-space-sm bg-surface-container-lowest rounded-lg p-space-md shadow-sm border border-outline-variant/40" id="food-result-card">
+        <div class="flex items-center gap-1.5">
+          <span class="material-symbols-outlined text-[18px] text-tertiary">verified</span>
+          <span class="font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant" id="food-result-source">Estimación</span>
+        </div>
+        <div>
+          <label class="font-label-md text-label-md text-on-surface-variant" for="result-name-input">Alimento / platillo</label>
+          <input type="text" id="result-name-input" class="w-full h-11 rounded-DEFAULT bg-surface-container-low px-3 mt-1 font-body-md text-body-md text-on-surface outline-none" />
+        </div>
+        <div class="grid grid-cols-4 gap-space-xs">
+          <div class="flex flex-col gap-1">
+            <label class="font-label-md text-label-md text-on-surface-variant" for="result-kcal-input">Kcal</label>
+            <input type="number" min="0" id="result-kcal-input" class="w-full h-11 rounded-DEFAULT bg-surface-container-low px-2 font-body-md text-body-md text-on-surface outline-none text-center" />
+          </div>
+          <div class="flex flex-col gap-1">
+            <label class="font-label-md text-label-md text-on-surface-variant" for="result-protein-input">Prot. g</label>
+            <input type="number" min="0" id="result-protein-input" class="w-full h-11 rounded-DEFAULT bg-surface-container-low px-2 font-body-md text-body-md text-on-surface outline-none text-center" />
+          </div>
+          <div class="flex flex-col gap-1">
+            <label class="font-label-md text-label-md text-on-surface-variant" for="result-carbs-input">Carb. g</label>
+            <input type="number" min="0" id="result-carbs-input" class="w-full h-11 rounded-DEFAULT bg-surface-container-low px-2 font-body-md text-body-md text-on-surface outline-none text-center" />
+          </div>
+          <div class="flex flex-col gap-1">
+            <label class="font-label-md text-label-md text-on-surface-variant" for="result-fat-input">Grasa g</label>
+            <input type="number" min="0" id="result-fat-input" class="w-full h-11 rounded-DEFAULT bg-surface-container-low px-2 font-body-md text-body-md text-on-surface outline-none text-center" />
+          </div>
+        </div>
+        <p class="font-body-sm text-body-sm text-on-surface-variant" id="food-result-note"></p>
+        <button class="w-full h-12 rounded-full bg-tertiary text-on-tertiary font-label-lg text-label-lg flex items-center justify-center gap-1.5 shadow-sm" id="food-save-btn" type="button">
+          <span class="material-symbols-outlined text-[18px]">check_circle</span><span>Guardar registro</span>
+        </button>
+      </div>
+
+    </div>
+  </div>
+</div>
 
 </div>
 <!-- Firebase (sincronización Dúo Lumo entre los dos celulares) -->

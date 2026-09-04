@@ -157,6 +157,187 @@
       ejercicios: ["Plancha — 3x40s", "Abdominales bicicleta — 3x20", "Elevación de piernas — 3x15"] },
   ];
 
+  /* ============================================================
+     NUTRICIÓN — momento del día, base de alimentos e IA
+     ============================================================ */
+
+  // Detecta el momento del día según la hora local del dispositivo.
+  //   06:00–11:59 → desayuno | 12:00–16:59 → comida
+  //   17:00–20:59 → cena     | 21:00–05:59 → snack
+  function getMealTypeByHour(date) {
+    const h = (date || new Date()).getHours();
+    if (h >= 6 && h < 12) return "desayuno";
+    if (h >= 12 && h < 17) return "comida";
+    if (h >= 17 && h < 21) return "cena";
+    return "snack";
+  }
+
+  const MEAL_TYPE_LABELS = {
+    desayuno: "Desayuno",
+    comida: "Comida",
+    cena: "Cena",
+    snack: "Snack",
+  };
+
+  // Base de alimentos comunes con calorías/macros precalculados por porción.
+  // (valores de referencia aproximados, pensados para selección rápida —
+  // Opción B del registro de comidas)
+  const FOOD_DATABASE = [
+    { name: "Huevo (1 pieza, cocido)", kcal: 78, protein: 6.3, carbs: 0.6, fat: 5.3 },
+    { name: "Pan de caja integral (1 rebanada)", kcal: 80, protein: 4, carbs: 14, fat: 1 },
+    { name: "Avena cocida (1 taza)", kcal: 166, protein: 6, carbs: 28, fat: 3.6 },
+    { name: "Plátano (1 pieza mediana)", kcal: 105, protein: 1.3, carbs: 27, fat: 0.4 },
+    { name: "Manzana (1 pieza mediana)", kcal: 95, protein: 0.5, carbs: 25, fat: 0.3 },
+    { name: "Yogur natural (1 taza)", kcal: 149, protein: 8.5, carbs: 11.4, fat: 8 },
+    { name: "Leche entera (1 taza)", kcal: 149, protein: 8, carbs: 12, fat: 8 },
+    { name: "Café con leche (1 taza)", kcal: 60, protein: 3, carbs: 5, fat: 3 },
+    { name: "Arroz blanco cocido (1 taza)", kcal: 206, protein: 4.3, carbs: 45, fat: 0.4 },
+    { name: "Frijoles cocidos (1 taza)", kcal: 245, protein: 15, carbs: 45, fat: 1 },
+    { name: "Pechuga de pollo asada (100 g)", kcal: 165, protein: 31, carbs: 0, fat: 3.6 },
+    { name: "Carne de res molida cocida (100 g)", kcal: 250, protein: 26, carbs: 0, fat: 17 },
+    { name: "Filete de pescado a la plancha (100 g)", kcal: 140, protein: 26, carbs: 0, fat: 4 },
+    { name: "Tortilla de maíz (1 pieza)", kcal: 52, protein: 1.4, carbs: 11, fat: 0.5 },
+    { name: "Taco de pollo (1 pieza)", kcal: 180, protein: 12, carbs: 16, fat: 8 },
+    { name: "Ensalada verde con aderezo ligero (1 tazón)", kcal: 90, protein: 2, carbs: 8, fat: 6 },
+    { name: "Aguacate (1/2 pieza)", kcal: 120, protein: 1.5, carbs: 6, fat: 11 },
+    { name: "Queso panela (30 g)", kcal: 70, protein: 6, carbs: 1, fat: 5 },
+    { name: "Pasta cocida (1 taza)", kcal: 220, protein: 8, carbs: 43, fat: 1.3 },
+    { name: "Pizza (1 rebanada mediana)", kcal: 285, protein: 12, carbs: 36, fat: 10 },
+    { name: "Ensalada de atún (1 tazón)", kcal: 220, protein: 24, carbs: 6, fat: 11 },
+    { name: "Sopa de verduras (1 tazón)", kcal: 120, protein: 4, carbs: 18, fat: 3 },
+    { name: "Almendras (25 g / puñado)", kcal: 145, protein: 5.3, carbs: 5.4, fat: 12.5 },
+    { name: "Barra de granola (1 pieza)", kcal: 120, protein: 3, carbs: 20, fat: 4 },
+    { name: "Agua de limón sin azúcar (1 vaso)", kcal: 10, protein: 0, carbs: 2.5, fat: 0 },
+    { name: "Refresco (1 lata)", kcal: 140, protein: 0, carbs: 39, fat: 0 },
+    { name: "Chocolate amargo (1 cuadro, 70%)", kcal: 45, protein: 0.6, carbs: 4, fat: 3 },
+  ];
+
+  /* ------------------------------------------------------------
+     Integración con IA multimodal (foto y texto)
+     ------------------------------------------------------------
+     Conecta aquí la API que elijan (OpenAI Vision, Gemini, etc.).
+     ⚠️ IMPORTANTE: nunca dejes tu apiKey real en este archivo si el
+     sitio se sirve como estático en GitHub Pages — cualquiera puede
+     leer el código fuente y robarla. Lo correcto en producción es
+     llamar a un pequeño backend/proxy propio (p. ej. una Cloud
+     Function) que guarde la key de forma segura y reciba aquí solo
+     la foto/texto. Estos placeholders están listos para conectarse
+     a ese proxy o, temporalmente en desarrollo, a la API directa.
+     ------------------------------------------------------------ */
+  const AI_CONFIG = {
+    // "openai" | "gemini" | "proxy" (tu propio backend)
+    provider: "proxy",
+    apiKey: "TU_API_KEY_AQUI", // <-- coloca aquí tu key (o bórrala si usas "proxy")
+    endpoint: "https://TU-BACKEND-O-PROXY/analizar-comida", // <-- URL de tu proxy o de la API elegida
+    visionModel: "gpt-4o-mini", // ejemplo si usaran OpenAI directo
+    textModel: "gpt-4o-mini",
+  };
+
+  function aiIsConfigured() {
+    return (
+      AI_CONFIG.apiKey &&
+      AI_CONFIG.apiKey !== "TU_API_KEY_AQUI" &&
+      AI_CONFIG.endpoint &&
+      !AI_CONFIG.endpoint.includes("TU-BACKEND")
+    );
+  }
+
+  // Estima kcal/macros a partir de una foto (base64 sin el prefijo data:).
+  // Placeholder: intenta llamar a AI_CONFIG.endpoint; si no está configurado
+  // (caso por defecto), devuelve una estimación simulada para poder seguir
+  // probando el flujo completo de la UI sin una key real.
+  async function analyzeImageWithAI(base64Image) {
+    if (!aiIsConfigured()) {
+      return mockEstimate("foto");
+    }
+    try {
+      const res = await fetch(AI_CONFIG.endpoint, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          tipo: "foto",
+          modelo: AI_CONFIG.visionModel,
+          imagenBase64: base64Image,
+          instrucciones:
+            "Analiza esta foto de un platillo. Devuelve SOLO un JSON con: " +
+            '{"descripcion": string, "calorias": number, "proteinas": number, "carbohidratos": number, "grasas": number}. ' +
+            "Los valores nutricionales son estimados en gramos (proteínas/carbohidratos/grasas) y kcal totales.",
+        }),
+      });
+      if (!res.ok) throw new Error("Respuesta no válida del servicio de IA (" + res.status + ")");
+      const data = await res.json();
+      return normalizeAIResult(data, "foto");
+    } catch (err) {
+      console.warn("No se pudo analizar la foto con IA:", err);
+      const fallback = mockEstimate("foto");
+      fallback.note =
+        "No se pudo contactar al servicio de IA — mostrando una estimación de ejemplo. Ajusta los valores manualmente.";
+      return fallback;
+    }
+  }
+
+  // Estima kcal/macros a partir de una descripción de texto libre.
+  async function analyzeTextWithAI(texto) {
+    if (!aiIsConfigured()) {
+      return mockEstimate("texto", texto);
+    }
+    try {
+      const res = await fetch(AI_CONFIG.endpoint, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          tipo: "texto",
+          modelo: AI_CONFIG.textModel,
+          descripcion: texto,
+          instrucciones:
+            "Interpreta esta descripción de una comida y estima su valor nutricional. Devuelve SOLO un JSON con: " +
+            '{"descripcion": string, "calorias": number, "proteinas": number, "carbohidratos": number, "grasas": number}.',
+        }),
+      });
+      if (!res.ok) throw new Error("Respuesta no válida del servicio de IA (" + res.status + ")");
+      const data = await res.json();
+      return normalizeAIResult(data, "texto");
+    } catch (err) {
+      console.warn("No se pudo analizar el texto con IA:", err);
+      const fallback = mockEstimate("texto", texto);
+      fallback.note =
+        "No se pudo contactar al servicio de IA — mostrando una estimación de ejemplo. Ajusta los valores manualmente.";
+      return fallback;
+    }
+  }
+
+  function normalizeAIResult(data, metodo) {
+    return {
+      descripcion: data.descripcion || (metodo === "foto" ? "Platillo detectado" : "Comida descrita"),
+      calorias: Math.round(Number(data.calorias) || 0),
+      proteinas: Math.round(Number(data.proteinas) || 0),
+      carbohidratos: Math.round(Number(data.carbohidratos) || 0),
+      grasas: Math.round(Number(data.grasas) || 0),
+      note: "Estimación generada por IA — puedes ajustarla antes de guardar.",
+    };
+  }
+
+  // Estimación simulada (usada mientras no haya una API key/proxy real
+  // configurado en AI_CONFIG) para que el flujo completo de la app se
+  // pueda probar de principio a fin.
+  function mockEstimate(metodo, texto) {
+    const opciones = [
+      { descripcion: "Platillo mixto (estimado)", calorias: 420, proteinas: 22, carbohidratos: 45, grasas: 15 },
+      { descripcion: "Comida ligera (estimado)", calorias: 260, proteinas: 14, carbohidratos: 30, grasas: 8 },
+      { descripcion: "Comida abundante (estimado)", calorias: 620, proteinas: 30, carbohidratos: 65, grasas: 22 },
+    ];
+    const pick = opciones[Math.floor(Math.random() * opciones.length)];
+    return {
+      descripcion: metodo === "texto" && texto ? texto.slice(0, 60) : pick.descripcion,
+      calorias: pick.calorias,
+      proteinas: pick.proteinas,
+      carbohidratos: pick.carbohidratos,
+      grasas: pick.grasas,
+      note:
+        "Estimación DE EJEMPLO (IA no configurada aún — ver AI_CONFIG en app.js). Ajusta los valores antes de guardar.",
+    };
+  }
+
   /* ---------- Estado ---------- */
   let state = loadState() || {
     profiles: {
@@ -487,7 +668,9 @@
       deficit: c.deficit,
       dailyCal: c.dailyCal,
       weightLog: [{ date: todayKey(), peso: ob.peso }],
-      foodLog: {}, // { "YYYY-MM-DD": [{name, kcal}] }
+      // { "YYYY-MM-DD": [{ tipo, metodo, descripcion, calorias, proteinas,
+      //                     carbohidratos, grasas, timestamp }] }
+      foodLog: {},
       streak: 0,
       lastCheckIn: null,
       stravaConnected: false,
@@ -575,12 +758,19 @@
     renderFoodLog();
   }
 
+  const MEAL_TYPE_ICONS = {
+    desayuno: "wb_twilight",
+    comida: "lunch_dining",
+    cena: "dinner_dining",
+    snack: "cookie",
+  };
+
   function renderFoodLog() {
     const data = currentData();
     if (!data) return;
     const today = todayKey();
     const items = data.foodLog[today] || [];
-    const consumed = items.reduce((sum, i) => sum + i.kcal, 0);
+    const consumed = items.reduce((sum, i) => sum + (i.calorias ?? i.kcal ?? 0), 0);
     const remaining = Math.max(0, data.dailyCal - consumed);
     const pct = Math.min(100, Math.round((consumed / data.dailyCal) * 100));
 
@@ -596,14 +786,21 @@
       list.appendChild(li);
     } else {
       items.forEach((item) => {
+        // Compatibilidad con registros antiguos (formato { name, kcal })
+        const desc = item.descripcion ?? item.name ?? "Comida";
+        const kcal = item.calorias ?? item.kcal ?? 0;
+        const tipo = item.tipo || "snack";
+        const icon = MEAL_TYPE_ICONS[tipo] || "restaurant";
         const li = document.createElement("li");
         li.className =
-          "flex items-center justify-between bg-surface-container-low rounded-DEFAULT px-3 py-2";
+          "flex items-center gap-space-xs bg-surface-container-low rounded-DEFAULT px-3 py-2";
         li.innerHTML =
-          '<span class="font-body-sm text-body-sm text-on-surface">' +
-          escapeHtml(item.name) +
-          '</span><span class="font-label-md text-label-md text-on-surface-variant">' +
-          item.kcal +
+          '<span class="material-symbols-outlined text-[18px] text-on-surface-variant shrink-0">' +
+          icon +
+          '</span><span class="font-body-sm text-body-sm text-on-surface flex-1 truncate">' +
+          escapeHtml(desc) +
+          '</span><span class="font-label-md text-label-md text-on-surface-variant shrink-0">' +
+          Math.round(kcal) +
           " kcal</span>";
         list.appendChild(li);
       });
@@ -616,24 +813,208 @@
     return div.innerHTML;
   }
 
-  function addFoodManual() {
-    const name = prompt("¿Qué comiste?");
-    if (!name) return;
-    const kcalStr = prompt("¿Cuántas kcal aproximadamente?");
-    const kcal = parseInt(kcalStr, 10);
-    if (!kcal || kcal <= 0) return;
+  /* ============================================================
+     MODAL DE REGISTRO DE COMIDA (Foto IA / Lista / Texto IA)
+     ============================================================ */
+
+  let foodModal = {
+    mealType: "desayuno",
+    method: "lista",
+    photoBase64: null, // sin el prefijo data:...;base64,
+    draft: null, // { descripcion, calorias, proteinas, carbohidratos, grasas }
+  };
+
+  function openFoodModal(defaultMethod) {
+    foodModal.mealType = getMealTypeByHour();
+    foodModal.method = defaultMethod || "lista";
+    foodModal.photoBase64 = null;
+    foodModal.draft = null;
+
+    selectMealType(foodModal.mealType);
+    selectFoodMethod(foodModal.method);
+    resetPhotoPanel();
+    $("food-text-input").value = "";
+    $("text-analyze-btn").disabled = true;
+    $("food-search-input").value = "";
+    renderFoodListResults("");
+    hideResultCard();
+
+    $("food-modal-backdrop").classList.add("active");
+    $("food-modal-backdrop").classList.remove("hidden");
+  }
+
+  function closeFoodModal() {
+    $("food-modal-backdrop").classList.remove("active");
+    $("food-modal-backdrop").classList.add("hidden");
+  }
+
+  function selectMealType(tipo) {
+    foodModal.mealType = tipo;
+    $("food-modal-title").textContent = MEAL_TYPE_LABELS[tipo];
+    $$(".meal-type-btn").forEach((btn) => {
+      btn.classList.toggle("active", btn.getAttribute("data-meal") === tipo);
+    });
+  }
+
+  function selectFoodMethod(method) {
+    foodModal.method = method;
+    $$(".food-method-btn").forEach((btn) => {
+      btn.classList.toggle("active", btn.getAttribute("data-method") === method);
+    });
+    $$(".food-method-panel").forEach((panel) => {
+      const active = panel.getAttribute("data-method-panel") === method;
+      panel.classList.toggle("hidden", !active);
+      panel.classList.toggle("flex", active);
+    });
+    hideResultCard();
+  }
+
+  function resetPhotoPanel() {
+    $("photo-preview").classList.add("hidden");
+    $("photo-preview").src = "";
+    $("photo-placeholder-icon").classList.remove("hidden");
+    $("photo-placeholder-text").classList.remove("hidden");
+    $("photo-placeholder-text").textContent = "Toma o sube una foto de tu platillo";
+    $("photo-analyze-btn").disabled = true;
+    $("photo-input").value = "";
+  }
+
+  function handlePhotoSelected(file) {
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      const dataUrl = reader.result;
+      foodModal.photoBase64 = String(dataUrl).split(",")[1] || null;
+      $("photo-preview").src = dataUrl;
+      $("photo-preview").classList.remove("hidden");
+      $("photo-placeholder-icon").classList.add("hidden");
+      $("photo-placeholder-text").classList.add("hidden");
+      $("photo-analyze-btn").disabled = false;
+    };
+    reader.readAsDataURL(file);
+  }
+
+  async function runPhotoAnalysis() {
+    if (!foodModal.photoBase64) return;
+    const btn = $("photo-analyze-btn");
+    const label = $("photo-analyze-label");
+    btn.disabled = true;
+    const original = label.textContent;
+    label.textContent = "Analizando…";
+    try {
+      const result = await analyzeImageWithAI(foodModal.photoBase64);
+      showResultCard(result, "Estimado por IA (foto)");
+    } finally {
+      label.textContent = original;
+      btn.disabled = false;
+    }
+  }
+
+  async function runTextAnalysis() {
+    const texto = $("food-text-input").value.trim();
+    if (!texto) return;
+    const btn = $("text-analyze-btn");
+    const label = $("text-analyze-label");
+    btn.disabled = true;
+    const original = label.textContent;
+    label.textContent = "Estimando…";
+    try {
+      const result = await analyzeTextWithAI(texto);
+      showResultCard(result, "Estimado por IA (texto)");
+    } finally {
+      label.textContent = original;
+      btn.disabled = false;
+    }
+  }
+
+  function renderFoodListResults(filterText) {
+    const list = $("food-list-results");
+    const filtered = FOOD_DATABASE.filter((f) =>
+      f.name.toLowerCase().includes((filterText || "").toLowerCase())
+    );
+    list.innerHTML = "";
+    if (filtered.length === 0) {
+      const empty = document.createElement("div");
+      empty.className = "font-body-sm text-body-sm text-on-surface-variant text-center py-3";
+      empty.textContent = "No se encontraron alimentos con ese nombre.";
+      list.appendChild(empty);
+      return;
+    }
+    filtered.forEach((food) => {
+      const row = document.createElement("button");
+      row.type = "button";
+      row.className =
+        "food-list-item w-full flex items-center justify-between gap-space-sm bg-surface-container-low rounded-DEFAULT px-3 py-2.5 text-left";
+      row.innerHTML =
+        '<span class="font-body-sm text-body-sm text-on-surface flex-1">' +
+        escapeHtml(food.name) +
+        '</span><span class="font-label-md text-label-md text-on-surface-variant shrink-0">' +
+        food.kcal +
+        " kcal</span>";
+      row.addEventListener("click", () => {
+        showResultCard(
+          {
+            descripcion: food.name,
+            calorias: food.kcal,
+            proteinas: food.protein,
+            carbohidratos: food.carbs,
+            grasas: food.fat,
+            note: "Valor de referencia de la base de alimentos de Lumo.",
+          },
+          "De la lista de alimentos"
+        );
+      });
+      list.appendChild(row);
+    });
+  }
+
+  function showResultCard(result, sourceLabel) {
+    foodModal.draft = result;
+    $("food-result-source").textContent = sourceLabel || "Estimación";
+    $("result-name-input").value = result.descripcion || "";
+    $("result-kcal-input").value = result.calorias || 0;
+    $("result-protein-input").value = result.proteinas || 0;
+    $("result-carbs-input").value = result.carbohidratos || 0;
+    $("result-fat-input").value = result.grasas || 0;
+    $("food-result-note").textContent = result.note || "";
+    const card = $("food-result-card");
+    card.classList.remove("hidden");
+    card.classList.add("flex");
+    card.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  }
+
+  function hideResultCard() {
+    foodModal.draft = null;
+    const card = $("food-result-card");
+    card.classList.add("hidden");
+    card.classList.remove("flex");
+  }
+
+  function saveFoodEntry() {
+    const descripcion = $("result-name-input").value.trim();
+    const calorias = parseInt($("result-kcal-input").value, 10);
+    if (!descripcion || !calorias || calorias <= 0) {
+      shake($("food-save-btn"));
+      return;
+    }
+    const entry = {
+      tipo: foodModal.mealType,
+      metodo: foodModal.method,
+      descripcion: descripcion,
+      calorias: calorias,
+      proteinas: parseInt($("result-protein-input").value, 10) || 0,
+      carbohidratos: parseInt($("result-carbs-input").value, 10) || 0,
+      grasas: parseInt($("result-fat-input").value, 10) || 0,
+      timestamp: new Date().toISOString(),
+    };
+
     const data = currentData();
     const today = todayKey();
     if (!data.foodLog[today]) data.foodLog[today] = [];
-    data.foodLog[today].push({ name, kcal });
+    data.foodLog[today].push(entry);
     saveState();
     renderFoodLog();
-  }
-
-  function addFoodPhoto() {
-    alert(
-      "El reconocimiento de comida por foto está en desarrollo. Por ahora, esto sería una ESTIMACIÓN por visión IA, no una medición exacta — mientras tanto puedes usar 'Agregar comida' para registrarla manualmente."
-    );
+    closeFoodModal();
   }
 
   function toggleCheckIn() {
@@ -837,9 +1218,35 @@
 
     // Home
     $("check-in-btn").addEventListener("click", toggleCheckIn);
-    $("add-food-manual").addEventListener("click", addFoodManual);
-    $("add-food-photo").addEventListener("click", addFoodPhoto);
+    $("add-food-manual").addEventListener("click", () => openFoodModal("lista"));
+    $("add-food-photo").addEventListener("click", () => openFoodModal("foto"));
     $("switch-profile").addEventListener("click", switchProfile);
+
+    // Modal de registro de comida
+    $("food-modal-close").addEventListener("click", closeFoodModal);
+    $("food-modal-backdrop").addEventListener("click", (e) => {
+      if (e.target === $("food-modal-backdrop")) closeFoodModal();
+    });
+    $$(".meal-type-btn").forEach((btn) => {
+      btn.addEventListener("click", () => selectMealType(btn.getAttribute("data-meal")));
+    });
+    $$(".food-method-btn").forEach((btn) => {
+      btn.addEventListener("click", () => selectFoodMethod(btn.getAttribute("data-method")));
+    });
+    // Opción A: Foto + IA
+    $("photo-dropzone").addEventListener("click", () => $("photo-input").click());
+    $("photo-pick-btn").addEventListener("click", () => $("photo-input").click());
+    $("photo-input").addEventListener("change", (e) => handlePhotoSelected(e.target.files[0]));
+    $("photo-analyze-btn").addEventListener("click", runPhotoAnalysis);
+    // Opción B: Lista / base de alimentos
+    $("food-search-input").addEventListener("input", (e) => renderFoodListResults(e.target.value));
+    // Opción C: Descripción en texto
+    $("food-text-input").addEventListener("input", (e) => {
+      $("text-analyze-btn").disabled = e.target.value.trim().length === 0;
+    });
+    $("text-analyze-btn").addEventListener("click", runTextAnalysis);
+    // Guardar registro (compartido por las 3 opciones)
+    $("food-save-btn").addEventListener("click", saveFoodEntry);
 
     // Ejercicio
     $("strava-btn").addEventListener("click", toggleStrava);
