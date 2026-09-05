@@ -655,6 +655,28 @@
       ? ikerData.streak + (ikerData.streak === 1 ? " día" : " días")
       : "Sin datos";
 
+    // Progreso de tu pareja en "Camino a la meta" — solo el %, nunca su peso ni su meta
+    const partnerKey = state.currentProfile === "elena" ? "lucas" : "elena";
+    const partnerData = state.profiles[partnerKey];
+    const partnerMeta = PROFILE_META[partnerKey];
+    setMascot("partner-progress-avatar", partnerKey);
+    $("partner-progress-name").textContent = partnerMeta.name;
+    if (
+      partnerData &&
+      partnerData.pesoInicial != null &&
+      partnerData.metaPeso != null &&
+      partnerData.peso != null
+    ) {
+      const partnerTotalDist = Math.abs(partnerData.pesoInicial - partnerData.metaPeso) || 1;
+      const partnerAvanzado = Math.abs(partnerData.pesoInicial - partnerData.peso);
+      const partnerPct = Math.min(100, Math.round((partnerAvanzado / partnerTotalDist) * 100));
+      $("partner-progress-pct").textContent = partnerPct + "% completado";
+      $("partner-progress-fill").style.width = partnerPct + "%";
+    } else {
+      $("partner-progress-pct").textContent = "Sin datos";
+      $("partner-progress-fill").style.width = "0%";
+    }
+
     renderFoodLog();
   }
 
